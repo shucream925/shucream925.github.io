@@ -3,8 +3,11 @@
 const   FONT = "48px monospace";
 const   HEIGHT = 120;
 const   WIDTH = 128;
-let gScreen;
-let gImgMap;
+const   SMOOTH = 0;
+let gScreen;        //仮想画面
+let gWidth;         //実画面の幅
+let gHeight;        //実画面の高さ
+let gImgMap;        //画面
 
 function DrawMain()
 {
@@ -27,7 +30,7 @@ function WimPaint()
 
     const ca = document.getElementById("main");     //mainキャン
     const g = ca.getContext( "2d" );                //2D描画今ｔ系ストを取得
-    g.drawImage( gScreen, 0, 0, gScreen.width, gScreen.height, 0, 0, ca.width, ca.height);
+    g.drawImage( gScreen, 0, 0, gScreen.width, gScreen.height, 0, 0, gWidth, gHeight);
 }
 
 //タイマーイベント発生時の処理
@@ -36,11 +39,25 @@ function WimTimer()
     WimPaint();
 }
 
+//ブラウザサイズ変更イベント
 function WimSize()
 {
     const ca = document.getElementById("main");     //mainキャンバスの要素を追加
     ca.width = window.innerWidth;
     ca.height = window.innerHeight;
+
+    const g = ca.getContext( "2d" );            //2D描写コンテキストを取得
+    g.imageSmoothingEnabled = g.msImageSmoothingEnabled = SMOOTH;    //補間処理
+
+    // 実画面サイズを測定。ドットのアスペクト比を維持したままでの最大サイズを計測する。
+    gWidth = ca.width;
+    gHeight = ca.height;
+    if( gWidth / WIDTH < gHeight / HEIGHT ){
+        gHeight = gWidth * HEIGHT / WIDTH;
+    }else{
+        gWidth = gHeight * WIDTH / HEIGHT;
+    }
+    
 }
 
 //ブラウザ起動イベント
