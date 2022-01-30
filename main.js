@@ -2,14 +2,16 @@
 
 const   CHRHEIGHT = 32;                 //キャラの高さ
 const   CHRWIDTH = 32;                  //キャラの幅
-const   FONT = "48px monospace";        //使用フォント
+const   FONT = "36px monospace";        //使用フォント
 const   FONTSTYLE = "#ffffff"
 const   WIDTH = 32 * 25;                //仮想画面サイズ。高さ
 const   HEIGHT = 32 * 14;               //仮想画面サイズ。幅
+const   INTERVAL = 33;                  //フレーム呼出し間隔
 const   MAP_WIDTH = 26;                 //マップの高さ
 const   MAP_HEIGHT = 30;                //マップの幅
 const   SCR_HEIGHT = 15;                //画面タイルサイズの半分の高さ
 const   SCR_WIDTH = 13;                 //画面タイルサイズの半分の幅
+const   SCR_SPEED = 8;                  //スクロール速度
 const   SMOOTH = 1;                     //補間処理
 const	START_X = 1;			        //スタート位置X	
 const	START_Y	= 15;	                //スタート位置Y
@@ -31,6 +33,7 @@ let gImgMap;        //画面
 let gImgPlayer;     //画像。プレイヤー
 let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
+let gMessage = null;        //表示メッセージ
 
 const gFileMap      = "img/Outside_A2.png";
 const gFilePlayer   = "img/Tekkadan.png";
@@ -97,14 +100,24 @@ function DrawMain()
                  HEIGHT / 2 - CHRHEIGHT / 2, 
                  CHRWIDTH, CHRHEIGHT);
     
-    g.fillStyle = WNDSTYLE;             // ウィンドゥの色
-    g.fillRect(25, 325, 750, 100);
-
+    DrawMessage( g );               //メッセージ描画
+    
     g.font = FONT;          //文字フォントを指定
     g.fillStyle = FONTSTYLE;
     g.fillText( "x=" + gPlayerX + 
                 " y=" + gPlayerY + 
-                " m=" + gMap[ my * MAP_WIDTH + mx ], 30, 375);  
+                " m=" + gMap[ my * MAP_WIDTH + mx ], 30, 375);
+}
+
+function DrawMessage( g )
+{
+    g.fillStyle = WNDSTYLE;             // ウィンドゥの色
+    g.fillRect(25, 325, 750, 100);      //メッセージウィンドゥ
+
+    g.font = FONT;          //文字フォントを指定
+    g.fillStyle = FONTSTYLE;
+    g.fillText( gMessage, 25, 415);        //
+    
 }
 
 function DrawTile(g, x, y, idx)
@@ -139,16 +152,22 @@ function TickField()
     mx %= MAP_WIDTH;        //マップループ処理X
     my += MAP_HEIGHT;       //マップループ処理Y
     my %= MAP_HEIGHT;       //マップループ処理Y
+
     let m = gMap[ my * MAP_WIDTH + mx ];        //タイル番号
-    if( m != 0){
+
+    if(( m != 0 )&&( m != 48 )){
         gMoveX = 0;     //移動禁止
         gMoveY = 0;     //移動禁止
     }
 
-    gPlayerX += 8 * Math.sign( gMoveX );        //プレイヤー座標移動X
-    gPlayerY += 8 * Math.sign( gMoveY );        //プレイヤー座標移動Y
-    gMoveX -= 8 * Math.sign( gMoveX );          //移動消費量X
-    gMoveY -= 8 * Math.sign( gMoveY );          //移動消費量Y
+    if(m == 48){
+        gMessage = "止まるんじゃねぇぞ...";
+    }
+
+    gPlayerX += SCR_SPEED * Math.sign( gMoveX );        //プレイヤー座標移動X
+    gPlayerY += SCR_SPEED * Math.sign( gMoveY );        //プレイヤー座標移動Y
+    gMoveX -= SCR_SPEED * Math.sign( gMoveX );          //移動消費量X
+    gMoveY -= SCR_SPEED * Math.sign( gMoveY );          //移動消費量Y
 
     //マップループ処理
     gPlayerX += ( MAP_WIDTH * TILESIZE );
@@ -220,6 +239,6 @@ window.onload = function()
     
     WimSize();                                      //画面サイズ初期化
     window.addEventListener( "reize", function(){WimSize()});       //プラウザサイズ変更時にWimSize呼び出し
-    setInterval( function() { WimTimer();}, 33);     //33ms間隔で、WimTimer()を呼び出す
+    setInterval( function() { WimTimer();}, INTERVAL);     //33ms間隔で、WimTimer()を呼び出す
 }
 
