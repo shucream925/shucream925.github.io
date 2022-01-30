@@ -8,6 +8,8 @@ const   WIDTH = 32 * 25;                //仮想画面サイズ。高さ
 const   HEIGHT = 32 * 14;               //仮想画面サイズ。幅
 const   MAP_WIDTH = 26;                 //マップの高さ
 const   MAP_HEIGHT = 30;                //マップの幅
+const   SCR_HEIGHT = 15;                //画面タイルサイズの半分の高さ
+const   SCR_WIDTH = 13;                 //画面タイルサイズの半分の幅
 const   SMOOTH = 1;                     //補間処理
 const	START_X = 13;			        //スタート位置X	
 const	START_Y	= 15;	                //スタート位置Y
@@ -67,17 +69,15 @@ function DrawMain()
     let		mx = Math.floor( gPlayerX / TILESIZE );
 	let		my = Math.floor( gPlayerY / TILESIZE );
 
-    for( let dy = -15; dy <= 15; dy++){
-        let y = dy + 15;
+    for( let dy = -SCR_HEIGHT; dy <= SCR_HEIGHT; dy++){
         let ty = my + dy;           //タイル座標Y
-        let py = ( ty + MAP_HEIGHT + gPlayerY ) % MAP_HEIGHT;  //ループ後のタイル座標
-        for( let dx = -13; dx <= 13; dx++){
-            let x = dx + 13;
+        let py = ( ty + MAP_HEIGHT + gPlayerY) % MAP_HEIGHT;  //ループ後のタイル座標
+        for( let dx = -SCR_WIDTH; dx <= SCR_WIDTH; dx++){
 			let	tx = mx + dx;	    //タイル座標X
-            let px = ( tx + MAP_WIDTH + gPlayerX ) % MAP_WIDTH;     //ループ後のタイル座標
+            let px = ( tx + MAP_WIDTH + gPlayerX) % MAP_WIDTH;     //ループ後のタイル座標
             DrawTile(g,
-                     x * TILESIZE,
-                     y * TILESIZE - TILESIZE / 2,
+                     tx * TILESIZE + WIDTH / 2 - gPlayerX,
+                     ty * TILESIZE + HEIGHT / 2 - gPlayerY,
                      gMap[ py * MAP_WIDTH + px]);
             
         }
