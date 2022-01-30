@@ -12,7 +12,7 @@ const   MAP_HEIGHT = 30;                //マップの幅
 const   SCR_HEIGHT = 15;                //画面タイルサイズの半分の高さ
 const   SCR_WIDTH = 13;                 //画面タイルサイズの半分の幅
 const   SCR_SPEED = 8;                  //スクロール速度
-const   SMOOTH = 1;                     //補間処理
+const   SMOOTH = 0;                     //補間処理
 const   START_HP = 20;                  //初期HP           
 const	START_X = 1;			        //スタート位置X	
 const	START_Y	= 15;	                //スタート位置Y
@@ -32,6 +32,8 @@ let gLv = 1;        //プレイヤーのレベル
 let gScreen;        //仮想画面
 let gWidth;         //実画面の幅
 let gHeight;        //実画面の高さ
+let	gMessage1 = null;					//	表示メッセージ１
+let	gMessage2 = null;					//	表示メッセージ２
 let gMoveX = 0;     //移動量X
 let gMoveY = 0;     //移動量Y
 let gImgMap;        //画面
@@ -39,12 +41,25 @@ let gImgPlayer;     //画像。プレイヤー
 let gImgMessage;    //メッセージ画像
 let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
-let gMessage = null;        //表示メッセージ
+let gImgFight_Background;       //戦闘背景
 
+let gPhase = 0;     //戦闘フェーズ
+let gImgFight_Enemy_MS;
+let gImgFight_Player_MS;
+let gImgFight_Mind_status;
+let gImgFight_Enemy_status;
+let gCursor = 0;        //カーソル位置
+
+
+//画像読み込み
 const gFileMap      = "img/Outside_A2.png";
 const gFilePlayer   = "img/Tekkadan.png";
 const gMessage_window = 'img/Message_window.png';
-
+const gFight_Background = 'img/Fight_Background1.png';
+const gFight_Enemy_MS = 'img/Greize.png';
+const gFight_Player_MS = 'img/Barbtos1.png';
+const gFight_Mind_status = 'img/Mind_status.png'
+const gFight_Enemy_status = 'img/Enemy_status.png'
 
 const gMap = [
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -79,9 +94,16 @@ const gMap = [
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 ];
 
-function DrawMain()
-{
-    const g = gScreen.getContext( "2d" );   //2D描画コンテキストを取得
+// 戦闘フェイズテーブル
+var tblFightPhase = {
+    pre : 0,
+    begin : 1,
+    continue : 2,
+    end : 3
+};
+
+//マップ描画
+function DrawMap( g ){
     let		mx = Math.floor( gPlayerX / TILESIZE );
 	let		my = Math.floor( gPlayerY / TILESIZE );
 
@@ -99,7 +121,7 @@ function DrawMain()
         }
     }
 
-    //プレイヤー描画
+    //プレイヤー
     g.drawImage( gImgPlayer, 
                  ( gFrame >> 3 & 1) * CHRWIDTH, gAngle * CHRHEIGHT,
                  CHRWIDTH, CHRHEIGHT,
@@ -107,21 +129,77 @@ function DrawMain()
                  HEIGHT / 2 - CHRHEIGHT / 2, 
                  CHRWIDTH, CHRHEIGHT);
     
-    g.fillStyle = WNDSTYLE;             // ウィンドゥの色
-    // g.fillRect(25, 325, 750, 100);      //メッセージウィンドゥ
     DrawMessage( g );               //メッセージ描画
+}
+
+//戦闘描写
+function DrawFight( g )
+{
+    switch( gPhase ){
+        case tblFightPhase.begin:       //戦闘開始
+            SetMessage( "敵が現れた。", null);
+            g.drawImage( gImgFight_Background, 0, 0, 800, 350);                     //背景画像描写
+            g.drawImage( gImgFight_Enemy_MS, 0, 0, 257, 240, 500, 0, 257, 240);     //敵画像描写
+            g.drawImage( gImgFight_Player_MS, 0, 0, 291, 233, 50, 150, 291, 233);   //自機画像描写
+
+            //自機ステータス描写
+            g.fillStyle = "#000000";
+            g.fillRect( 104, 75, 140, 50);
+            g.fillStyle = "#3eb370";
+            g.fillRect( 102, 75, 140, 50);
+            g.drawImage( gImgFight_Mind_status, 0, 0, 250, 100, 0, 50, 250, 100);   //自機ステータス背景画像描写
+            g.font = FONT;          //文字フォントを指定
+            g.fillStyle = FONTSTYLE;
+            g.fillText( "バルバトス", 10, 75);              //機体名
+            g.fillText( "Lv." + gLv, 190, 75);              //Lv
+            g.fillText( gHP + "/" + gMAXHP, 150, 125);      //HP
+            
+            //敵機ステータス描写
+            g.fillStyle = "#000000";
+            g.fillRect( WIDTH - 248 + 93, 260, 136, 50);
+            g.fillStyle = "#3eb370";
+            g.fillRect( WIDTH - 248 + 93, 260, 136, 50);
+            g.drawImage( gImgFight_Enemy_status, 0, 0, 246, 68, WIDTH - 246, 250, 246, 68);   //自機ステータス背景画像描写
+            g.font = FONT;          //文字フォントを指定
+            g.fillStyle = FONTSTYLE;
+            g.fillText( "グレイズ", WIDTH - 248 + 10, 285);              //機体名
+            g.fillText( "Lv.3", WIDTH - 248 + 180, 285);              //Lv
+            
+        case tblFightPhase.continue:    //戦闘中
+            
+
+        case tblFightPhase.end:         //戦闘終了
+
+    }
+
+    DrawMessage( g );               //メッセージ描画
+
+    //カーソル表示
+    if(gPhase == tblFightPhase.continue )
+    {
+        g.fillText("⇒", 6, 378 + 23 * gCursor)    //カーソル描画
+    }
+
+} 
+
+function DrawMain()
+{
+    const g = gScreen.getContext( "2d" );   //2D描画コンテキストを取得
     
-    // g.font = FONT;          //文字フォントを指定
-    // g.fillStyle = FONTSTYLE;
-    // g.fillText( "x=" + gPlayerX + 
-    //             " y=" + gPlayerY + 
-    //             " m=" + gMap[ my * MAP_WIDTH + mx ], 30, 400);
+    if( gPhase == tblFightPhase.pre){
+        DrawMap( g );
+    }
+    else
+    {
+        DrawFight( g );
+    }
+
 }
 
 //メッセージ描画
 function DrawMessage( g )
 {
-    if( !gMessage )
+    if( !gMessage1 )
     {
         return;
     }
@@ -129,7 +207,11 @@ function DrawMessage( g )
     g.drawImage( gImgMessage, 0, 0, 800, 100, 0, 348, 800, 100 );
     g.font = FONT;          //文字フォントを指定
     g.fillStyle = FONTSTYLE;
-    g.fillText( gMessage, 10, 348 + 30);        //
+
+    g.fillText( gMessage1, 10, 348 + 30);					//	メッセージ１行目描画
+	if( gMessage2 ){
+		g.fillText( gMessage2, 10, 348 + 50);			//	メッセージ２行目描画
+	}
     
 }
 
@@ -145,14 +227,37 @@ function DrawTile(g, x, y, idx)
 
 function SetMessage( v1, v2 )
 {
-	gMessage = v1;
+	gMessage1 = v1;
+	gMessage2 = v2;
 }
 
 function LoadImage()
 {
-    gImgMap     = new Image(); gImgMap.src = gFileMap;     //マップ画像読み込み
-    gImgPlayer  = new Image(); gImgPlayer.src = gFilePlayer;  //プレイヤー
-    gImgMessage = new Image(); gImgMessage.src = gMessage_window; //メッセージウィンドゥ
+    gImgMap     = new Image();
+    gImgMap.src = gFileMap;     //マップ画像読み込み
+    
+    gImgPlayer  = new Image();
+    gImgPlayer.src = gFilePlayer;  //プレイヤー
+    
+    gImgMessage = new Image();
+    gImgMessage.src = gMessage_window; //メッセージウィンドゥ
+
+    gImgFight_Background = new Image();
+    gImgFight_Background.src = gFight_Background; //戦闘背景
+    
+    gImgFight_Enemy_MS = new Image();
+    gImgFight_Enemy_MS.src = gFight_Enemy_MS; //戦闘敵MS画像
+
+    gImgFight_Player_MS = new Image();
+    gImgFight_Player_MS.src = gFight_Player_MS; //戦闘自分MS画像
+
+    gImgFight_Mind_status = new Image();
+    gImgFight_Mind_status.src = gFight_Mind_status; //戦闘自分ステータス画像
+
+    gImgFight_Enemy_status = new Image();
+    gImgFight_Enemy_status.src = gFight_Enemy_status; //戦闘自分ステータス画像
+
+
 }
 
 //フィールド進行処理
@@ -185,8 +290,8 @@ function TickField()
             SetMessage("止まるんじゃねぇぞ...", null);
         }
 
-        if( Math.random() * 4 < 1 ){        //ランダムエンカウント
-            SetMessage( "敵が現れた。", null);
+        if(( Math.random() * 4 < 1 )&&(gPhase == tblFightPhase.pre)){        //ランダムエンカウント
+            gPhase = tblFightPhase.begin;         //摘出現
         }
     }
 
@@ -226,7 +331,29 @@ window.onkeydown = function ( ev )
     let c = ev.keyCode;
 
     gKey[ c ] = 1;
-    gMessage = null;    //メッセージリセット
+    //gMessage1 = null;    //メッセージリセット
+    //gMessage2 = null;    //メッセージリセット
+
+    if( gPhase == tblFightPhase.begin ){				//	敵が現れた場合
+		gPhase = tblFightPhase.continue;					//	戦闘コマンド選択フェーズ
+		SetMessage( "　戦う", "　逃げる" );
+		return;
+	}
+
+    if( gPhase == tblFightPhase.continue ){
+        if(( c == 13) || ( c == 90 )){      //Enterキー又はZキー
+            SetMessage("敵機を倒した", null);
+            gPhase = tblFightPhase.end;
+        }else{
+            gCursor = 1 - gCursor;
+        }
+        return;
+    }
+
+    if( gPhase == tblFightPhase.end ){
+        gMessage1 = null;
+        gPhase = tblFightPhase.pre;
+    }
 }
 
 window.onkeyup = function( ev )
