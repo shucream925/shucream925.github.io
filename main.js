@@ -2,8 +2,8 @@
 
 const   CHRHEIGHT = 32;                 //キャラの高さ
 const   CHRWIDTH = 32;                  //キャラの幅
-const   FONT = "36px monospace";        //使用フォント
-const   FONTSTYLE = "#ffffff"
+const   FONT = "24px monospace";        //使用フォント
+const   FONTSTYLE = "#000000"
 const   WIDTH = 32 * 25;                //仮想画面サイズ。高さ
 const   HEIGHT = 32 * 14;               //仮想画面サイズ。幅
 const   INTERVAL = 33;                  //フレーム呼出し間隔
@@ -13,6 +13,7 @@ const   SCR_HEIGHT = 15;                //画面タイルサイズの半分の�
 const   SCR_WIDTH = 13;                 //画面タイルサイズの半分の幅
 const   SCR_SPEED = 8;                  //スクロール速度
 const   SMOOTH = 1;                     //補間処理
+const   START_HP = 20;                  //初期HP           
 const	START_X = 1;			        //スタート位置X	
 const	START_Y	= 15;	                //スタート位置Y
 const   TILESIZE = 32;                  //タイルサイズ(ドット)
@@ -23,7 +24,11 @@ const   WNDSTYLE = "rgba(0, 0, 0, 0.7)";//ウィンドウの色
 const   gKey = new Uint8Array( 0x100 );    //キー入力バッファ
 
 let gFrame = 0;
-let gAngle = 0;
+let gAngle = 0;     //プレイヤーの角度
+let gEx = 0;        //初期経験値
+let gHP = START_HP;  //初期HP
+let gMAXHP = START_HP;  //最大HP
+let gLv = 1;        //プレイヤーのレベル
 let gScreen;        //仮想画面
 let gWidth;         //実画面の幅
 let gHeight;        //実画面の高さ
@@ -31,12 +36,14 @@ let gMoveX = 0;     //移動量X
 let gMoveY = 0;     //移動量Y
 let gImgMap;        //画面
 let gImgPlayer;     //画像。プレイヤー
+let gImgMessage;    //メッセージ画像
 let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
 let gMessage = null;        //表示メッセージ
 
 const gFileMap      = "img/Outside_A2.png";
 const gFilePlayer   = "img/Tekkadan.png";
+const gMessage_window = 'img/Message_window.png';
 
 
 const gMap = [
@@ -100,23 +107,29 @@ function DrawMain()
                  HEIGHT / 2 - CHRHEIGHT / 2, 
                  CHRWIDTH, CHRHEIGHT);
     
+    g.fillStyle = WNDSTYLE;             // ウィンドゥの色
+    // g.fillRect(25, 325, 750, 100);      //メッセージウィンドゥ
     DrawMessage( g );               //メッセージ描画
     
-    g.font = FONT;          //文字フォントを指定
-    g.fillStyle = FONTSTYLE;
-    g.fillText( "x=" + gPlayerX + 
-                " y=" + gPlayerY + 
-                " m=" + gMap[ my * MAP_WIDTH + mx ], 30, 375);
+    // g.font = FONT;          //文字フォントを指定
+    // g.fillStyle = FONTSTYLE;
+    // g.fillText( "x=" + gPlayerX + 
+    //             " y=" + gPlayerY + 
+    //             " m=" + gMap[ my * MAP_WIDTH + mx ], 30, 400);
 }
 
+//メッセージ描画
 function DrawMessage( g )
 {
-    g.fillStyle = WNDSTYLE;             // ウィンドゥの色
-    g.fillRect(25, 325, 750, 100);      //メッセージウィンドゥ
+    if( !gMessage )
+    {
+        return;
+    }
 
+    g.drawImage( gImgMessage, 0, 0, 800, 100, 0, 348, 800, 100 );
     g.font = FONT;          //文字フォントを指定
     g.fillStyle = FONTSTYLE;
-    g.fillText( gMessage, 25, 415);        //
+    g.fillText( gMessage, 10, 348 + 30);        //
     
 }
 
@@ -130,10 +143,16 @@ function DrawTile(g, x, y, idx)
                  TILESIZE, TILESIZE);
 }
 
+function SetMessage( v1, v2 )
+{
+	gMessage = v1;
+}
+
 function LoadImage()
 {
-    gImgMap     = new Image(); gImgMap.src = gFileMap     //マップ画像読み込み
-    gImgPlayer  = new Image(); gImgPlayer.src = gFilePlayer  //プレイヤー
+    gImgMap     = new Image(); gImgMap.src = gFileMap;     //マップ画像読み込み
+    gImgPlayer  = new Image(); gImgPlayer.src = gFilePlayer;  //プレイヤー
+    gImgMessage = new Image(); gImgMessage.src = gMessage_window; //メッセージウィンドゥ
 }
 
 //フィールド進行処理
@@ -155,13 +174,20 @@ function TickField()
 
     let m = gMap[ my * MAP_WIDTH + mx ];        //タイル番号
 
-    if(( m != 0 )&&( m != 48 )){
-        gMoveX = 0;     //移動禁止
-        gMoveY = 0;     //移動禁止
-    }
+    if( Math.abs( gMoveX ) + Math.abs( gMoveY ) == SCR_SPEED )	//	マス目移動が終わる直前
+    {
+        if(( m != 0 )&&( m != 48 )){
+            gMoveX = 0;     //移動禁止
+            gMoveY = 0;     //移動禁止
+        }
 
-    if(m == 48){
-        gMessage = "止まるんじゃねぇぞ...";
+        if(m == 48){
+            SetMessage("止まるんじゃねぇぞ...", null);
+        }
+
+        if( Math.random() * 4 < 1 ){        //ランダムエンカウント
+            SetMessage( "敵が現れた。", null);
+        }
     }
 
     gPlayerX += SCR_SPEED * Math.sign( gMoveX );        //プレイヤー座標移動X
@@ -200,6 +226,7 @@ window.onkeydown = function ( ev )
     let c = ev.keyCode;
 
     gKey[ c ] = 1;
+    gMessage = null;    //メッセージリセット
 }
 
 window.onkeyup = function( ev )
