@@ -9,6 +9,8 @@ const   HEIGHT = 32 * 14;               //仮想画面サイズ。幅
 const   MAP_WIDTH = 26;                 //マップの高さ
 const   MAP_HEIGHT = 30;                //マップの幅
 const   SMOOTH = 1;                     //補間処理
+const	START_X = 13;			        //スタート位置X	
+const	START_Y	= 15;	                //スタート位置Y
 const   TILESIZE = 32;                  //タイルサイズ(ドット)
 const   TILECOLUMN = 16;                //タイル桁数
 const   TILEROW = 12;                   //タイル行数
@@ -19,8 +21,8 @@ let gWidth;         //実画面の幅
 let gHeight;        //実画面の高さ
 let gImgMap;        //画面
 let gImgPlayer;     //画像。プレイヤー
-let gPlayerX = 0;   //プレイヤーX座標
-let gPlayerY = 0;   //プレイヤーY座標
+let gPlayerX = START_X * TILESIZE;   //プレイヤーX座標
+let gPlayerY = START_Y * TILESIZE;   //プレイヤーY座標
 
 const gFileMap      = "img/Outside_A2.png";
 const gFilePlayer   = "img/Tekkadan.png";
@@ -62,13 +64,17 @@ const gMap = [
 function DrawMain()
 {
     const g = gScreen.getContext( "2d" );   //2D描画コンテキストを取得
+    let		mx = Math.floor( gPlayerX / TILESIZE );
+	let		my = Math.floor( gPlayerY / TILESIZE );
 
     for( let dy = -15; dy <= 15; dy++){
         let y = dy + 15;
+        let ty = my + dy;           //タイル座標Y
+        let py = ( ty + MAP_HEIGHT + gPlayerY ) % MAP_HEIGHT;  //ループ後のタイル座標
         for( let dx = -13; dx <= 13; dx++){
             let x = dx + 13;
-            let px = ( gPlayerX + x + MAP_WIDTH ) % MAP_WIDTH;
-            let py = ( gPlayerY + y +MAP_HEIGHT ) % MAP_HEIGHT;
+			let	tx = mx + dx;	    //タイル座標X
+            let px = ( tx + MAP_WIDTH + gPlayerX ) % MAP_WIDTH;     //ループ後のタイル座標
             DrawTile(g,
                      x * TILESIZE,
                      y * TILESIZE - TILESIZE / 2,
@@ -93,7 +99,9 @@ function DrawMain()
 
     g.font = FONT;          //文字フォントを指定
     g.fillStyle = FONTSTYLE;
-    g.fillText( "x=" + gPlayerX + " y=" + gPlayerY, 30, 375);  
+    g.fillText( "x=" + gPlayerX + 
+                " y=" + gPlayerY + 
+                " m=" + gMap[ my * MAP_WIDTH + mx ], 30, 375);  
 }
 
 function DrawTile(g, x, y, idx)
@@ -139,10 +147,10 @@ window.onkeydown = function ( ev )
     if( c == 40 )  gPlayerY++;     //下
 
     //マップループ処理
-    gPlayerX += MAP_WIDTH;
-    gPlayerX %= MAP_WIDTH;
-    gPlayerY += MAP_HEIGHT;
-    gPlayerY %= MAP_HEIGHT;
+    gPlayerX += ( MAP_WIDTH * TILESIZE );
+    gPlayerX %= ( MAP_WIDTH * TILESIZE );
+    gPlayerY += ( MAP_HEIGHT * TILESIZE );
+    gPlayerY %= ( MAP_HEIGHT * TILESIZE );
 
 }
 
