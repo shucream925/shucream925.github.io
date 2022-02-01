@@ -23,6 +23,8 @@ const   WNDSTYLE = "rgba(0, 0, 0, 0.7)";//ウィンドウの色
 
 const   gKey = new Uint8Array( 0x100 );    //キー入力バッファ
 
+
+let init = false;
 let gFrame = 0;
 let gAngle = 0;     //プレイヤーの角度
 let gEx = 0;        //初期経験値
@@ -44,12 +46,15 @@ let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
 let gImgFight_Background;       //戦闘背景
 
+let gPlayer;
 let Barbtos1;
+let Barbtos2;
 let Greize;
 
 let gPhase = 0;     //戦闘フェーズ
-let gImgFight_Enemy_MS;
-let gImgFight_Player_MS;
+let gImgFight_Greize_MS;
+let gImgFight_Barbatos1_MS;
+let gImgFight_Barbatos2_MS;
 let gImgFight_Mind_status;
 let gImgFight_Enemy_status;
 let gCursor = 0;        //カーソル位置
@@ -61,10 +66,13 @@ const gFilePlayer   = "img/Tekkadan.png";
 const gMessage_window = 'img/Message_window2.png';
 const gCommand_window = 'img/command_window.png';
 const gFight_Background = 'img/Fight_Background1.png';
-const gFight_Enemy_MS = 'img/Greize.png';
-const gFight_Player_MS = 'img/Barbtos1.png';
 const gFight_Mind_status = 'img/Mind_status.png'
 const gFight_Enemy_status = 'img/Enemy_status.png'
+
+//機体画像
+const gFight_Greize_MS = 'img/Greize.png';
+const gFight_Barbatos1_MS = 'img/Barbtos1.png';
+const gFight_Barbatos2_MS = 'img/Barbtos2.png';
 
 //Class定義
 const MS = class{
@@ -76,6 +84,12 @@ const MS = class{
        this.Ex = Ex;      //HPの最大値
        this.Lv = Lv;      //HPの最大値
        this.IMG = IMG;      //HPの最大値
+    }
+}
+
+const Player = class{
+    constructor( MS ){
+    this.MS = MS;       //搭乗MS
     }
 }
 
@@ -128,13 +142,18 @@ function DrawMain()
 {
     const g = gScreen.getContext( "2d" );   //2D描画コンテキストを取得
     
+    if(init == false){
+        SetUpMS( g );       //MS情報の設定
+        gPlayer     = new Player(Barbtos1);
+        init = true;
+    }
+
     if( gPhase == tblFightPhase.pre){
-        DrawMap( g );
+        DrawMap( g );       //マップ描写
     }
     else
     {
-        SetUpMS( g );    
-        DrawFight( g );
+        DrawFight( g );     //戦闘描写
     }
 
 }
@@ -176,7 +195,7 @@ function DrawFight( g )
         case tblFightPhase.begin:       //戦闘開始
             SetMessage( " ", null);
             g.drawImage( gImgFight_Background, 0, 0, 800, 350);                     //背景画像描写
-            g.drawImage( Barbtos1.IMG, 0, 0, 291, 233, 50, 150, Math.floor(291 * 0.8), Math.floor(233 * 0.8));   //自機画像描写
+            g.drawImage( gPlayer.MS.IMG, 0, 0, 291, 233, 50, 150, Math.floor(291 * 0.8), Math.floor(233 * 0.8));   //自機画像描写
             g.drawImage( Greize.IMG , 0, 0, 257, 240, 600, 150, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
                         
     }
@@ -193,19 +212,20 @@ function DrawFight( g )
 
 function AddExp( val )
 {
-    gEx += val;             //経験値加算
-    while( gLv < gEx ){
-        gLv++;              //レベルアップ
-        let HPpercent = gHP / gMAXHP;
-        gMAXHP += 4;        //HP加算
-        gHP = Math.floor( HPpercent * gMAXHP ); 
+    gPlayer.MS.Ex += val;             //経験値加算
+    while( gPlayer.MS.Lv < gPlayer.MS.Ex ){
+        gPlayer.MS.Lv++;              //レベルアップ
+        let HPpercent = gPlayer.MS.HP / gPlayer.MS.MAXHP;
+        gPlayer.MS.MAXHP += 4;        //HP加算
+        gPlayer.MS.HP = Math.floor( HPpercent * gPlayer.MS.MAXHP ); 
     }
 
 }
 
 function SetUpMS( g ){
-    Barbtos1    = new MS(0, "バルバトス", gHP, gMAXHP, gEx, gLv, gImgFight_Player_MS);
-    Greize      = new MS(1, "グレイズ", 3, 3, 0, 0, gImgFight_Enemy_MS);
+    Barbtos1    = new MS(0, "バルバトス第一形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos1_MS);
+    Barbtos2    = new MS(1, "バルバトス第二形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos2_MS);
+    Greize      = new MS(2, "グレイズ", 3, 3, 0, 0, gImgFight_Greize_MS);
 }
 
 //メッセージ描画
@@ -226,11 +246,11 @@ function DrawMessage( g )
 
     //機体名表示
     if( gPhase != tblFightPhase.end ){
-        g.fillText( Barbtos1.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
-        g.fillText( "Lv" + Barbtos1.Lv , 500, 380);
-        g.fillText( Barbtos1.HP + "/" + Barbtos1.MAXHP, 575, 380);                      //HP
+        g.fillText( gPlayer.MS.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
+        g.fillText( "Lv" + gPlayer.MS.Lv , 500, 380);
+        g.fillText( gPlayer.MS.HP + "/" + gPlayer.MS.MAXHP, 575, 380);                      //HP
         g.fillStyle = "#000000";    g.fillRect( 575, 382, 100, 5);
-        g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gHP / gMAXHP), 5);      //HPバー
+        g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gPlayer.MS.HP / gPlayer.MS.MAXHP), 5);      //HPバー
     }
 
     //バトルコマンド表示
@@ -297,18 +317,21 @@ function LoadImage()
     gImgFight_Background = new Image();
     gImgFight_Background.src = gFight_Background; //戦闘背景
     
-    gImgFight_Enemy_MS = new Image();
-    gImgFight_Enemy_MS.src = gFight_Enemy_MS; //戦闘敵MS画像
-
-    gImgFight_Player_MS = new Image();
-    gImgFight_Player_MS.src = gFight_Player_MS; //戦闘自分MS画像
-
     gImgFight_Mind_status = new Image();
     gImgFight_Mind_status.src = gFight_Mind_status; //戦闘自分ステータス画像
 
     gImgFight_Enemy_status = new Image();
     gImgFight_Enemy_status.src = gFight_Enemy_status; //戦闘自分ステータス画像
 
+    //機体画像
+    gImgFight_Greize_MS = new Image();
+    gImgFight_Greize_MS.src = gFight_Greize_MS; //グレイズ
+
+    gImgFight_Barbatos1_MS = new Image();
+    gImgFight_Barbatos1_MS.src = gFight_Barbatos1_MS; //バルバトス1
+    
+    gImgFight_Barbatos2_MS = new Image();
+    gImgFight_Barbatos2_MS.src = gFight_Barbatos2_MS; //バルバトス2
 
 }
 
@@ -403,7 +426,7 @@ window.onkeydown = function ( ev )
             break;
 
         case tblFightPhase.enemyturn:
-            gHP -= 2;
+            gPlayer.MS.HP -= 2;
             gPhase = tblFightPhase.myturn;
             break;
 
@@ -411,6 +434,11 @@ window.onkeydown = function ( ev )
             Greize.HP -=5;
             if( Greize.HP <= 0 ){
                 SetMessage("敵機を倒した", null);
+                if( gPlayer.MS.Lv == 3){
+                    SetMessage("敵機を倒した", "バルバトスは第二形態になった");
+                    Barbtos2    = new MS(1, "バルバトス第二形態", Barbtos1.MAXHP, Barbtos1.MAXHP, Barbtos1.Ex, Barbtos1.Lv, gImgFight_Barbatos2_MS);
+                    gPlayer = new Player(Barbtos2);
+                }
                 gPhase = tblFightPhase.end;
             }
             break;
