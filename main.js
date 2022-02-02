@@ -2,15 +2,18 @@
 
 const   CHRHEIGHT = 32;                 //キャラの高さ
 const   CHRWIDTH = 32;                  //キャラの幅
-const   FONT = "48px monospace";        //使用フォント
-const   FONTSTYLE = "#ffffff"
+const   FONT = "24px monospace";        //使用フォント
+const   FONTSTYLE = "#FFFFFF"
 const   WIDTH = 32 * 25;                //仮想画面サイズ。高さ
 const   HEIGHT = 32 * 14;               //仮想画面サイズ。幅
+const   INTERVAL = 33;                  //フレーム呼出し間隔
 const   MAP_WIDTH = 26;                 //マップの高さ
 const   MAP_HEIGHT = 30;                //マップの幅
 const   SCR_HEIGHT = 15;                //画面タイルサイズの半分の高さ
 const   SCR_WIDTH = 13;                 //画面タイルサイズの半分の幅
-const   SMOOTH = 1;                     //補間処理
+const   SCR_SPEED = 8;                  //スクロール速度
+const   SMOOTH = 0;                     //補間処理
+const   START_HP = 20;                  //初期HP           
 const	START_X = 1;			        //スタート位置X	
 const	START_Y	= 15;	                //スタート位置Y
 const   TILESIZE = 32;                  //タイルサイズ(ドット)
@@ -20,22 +23,77 @@ const   WNDSTYLE = "rgba(0, 0, 0, 0.7)";//ウィンドウの色
 
 const   gKey = new Uint8Array( 0x100 );    //キー入力バッファ
 
+
+let init = false;
 let gFrame = 0;
-let gAngle = 0;
+let gAngle = 0;     //プレイヤーの角度
+let gEx = 0;        //初期経験値
+let gHP = START_HP;  //初期HP
+let gMAXHP = START_HP;  //最大HP
+let gLv = 1;        //プレイヤーのレベル
 let gScreen;        //仮想画面
 let gWidth;         //実画面の幅
 let gHeight;        //実画面の高さ
+let	gMessage1 = null;					//	表示メッセージ１
+let	gMessage2 = null;					//	表示メッセージ２
 let gMoveX = 0;     //移動量X
 let gMoveY = 0;     //移動量Y
 let gImgMap;        //画面
 let gImgPlayer;     //画像。プレイヤー
+let gImgMessage;    //メッセージ画像
+let gImgCommand;    //メッセージ画像
 let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
+let gImgFight_Background;       //戦闘背景
 
+let gPlayer;
+let Barbtos1;
+let Barbtos2;
+let Greize;
+
+let gPhase = 0;     //戦闘フェーズ
+let gImgFight_Greize_MS;
+let gImgFight_Barbatos1_MS;
+let gImgFight_Barbatos2_MS;
+let gImgFight_Mind_status;
+let gImgFight_Enemy_status;
+let gCursor = 0;        //カーソル位置
+
+
+//画像読み込み
 const gFileMap      = "img/Outside_A2.png";
 const gFilePlayer   = "img/Tekkadan.png";
+const gMessage_window = 'img/Message_window2.png';
+const gCommand_window = 'img/command_window.png';
+const gFight_Background = 'img/Fight_Background1.png';
+const gFight_Mind_status = 'img/Mind_status.png'
+const gFight_Enemy_status = 'img/Enemy_status.png'
 
+//機体画像
+const gFight_Greize_MS = 'img/Greize.png';
+const gFight_Barbatos1_MS = 'img/Barbtos1.png';
+const gFight_Barbatos2_MS = 'img/Barbtos2.png';
 
+//Class定義
+const MS = class{
+    constructor(ID, NAME, HP, MAXHP, Ex, Lv, IMG){
+       this.ID = ID;            //ID
+       this.NAME = NAME;        //NAME
+       this.HP = HP;            //HP
+       this.MAXHP = MAXHP;      //HPの最大値
+       this.Ex = Ex;      //HPの最大値
+       this.Lv = Lv;      //HPの最大値
+       this.IMG = IMG;      //HPの最大値
+    }
+}
+
+const Player = class{
+    constructor( MS ){
+    this.MS = MS;       //搭乗MS
+    }
+}
+
+//マップ定義
 const gMap = [
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,18,19,0,20,21,0,0,0,0,0,22,23,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -69,9 +127,39 @@ const gMap = [
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 ];
 
+// 戦闘フェイズテーブル
+var tblFightPhase = {
+    pre : 0,
+    begin : 1,
+    continue : 2,
+    myturn : 3,
+    enemyturn : 4,
+    end : 5
+};
+
+//Main描写
 function DrawMain()
 {
     const g = gScreen.getContext( "2d" );   //2D描画コンテキストを取得
+    
+    if(init == false){
+        SetUpMS( g );       //MS情報の設定
+        gPlayer     = new Player(Barbtos1);
+        init = true;
+    }
+
+    if( gPhase == tblFightPhase.pre){
+        DrawMap( g );       //マップ描写
+    }
+    else
+    {
+        DrawFight( g );     //戦闘描写
+    }
+
+}
+
+//マップ描画
+function DrawMap( g ){
     let		mx = Math.floor( gPlayerX / TILESIZE );
 	let		my = Math.floor( gPlayerY / TILESIZE );
 
@@ -89,7 +177,7 @@ function DrawMain()
         }
     }
 
-    //プレイヤー描画
+    //プレイヤー
     g.drawImage( gImgPlayer, 
                  ( gFrame >> 3 & 1) * CHRWIDTH, gAngle * CHRHEIGHT,
                  CHRWIDTH, CHRHEIGHT,
@@ -97,14 +185,103 @@ function DrawMain()
                  HEIGHT / 2 - CHRHEIGHT / 2, 
                  CHRWIDTH, CHRHEIGHT);
     
-    g.fillStyle = WNDSTYLE;             // ウィンドゥの色
-    g.fillRect(25, 325, 750, 100);
+    DrawMessage( g );               //メッセージ描画
+}
+
+//戦闘描写
+function DrawFight( g )
+{
+    switch( gPhase ){
+        case tblFightPhase.begin:       //戦闘開始
+            SetMessage( " ", null);
+            g.drawImage( gImgFight_Background, 0, 0, 800, 350);                     //背景画像描写
+            g.drawImage( gPlayer.MS.IMG, 0, 0, 291, 233, 50, 150, Math.floor(291 * 0.8), Math.floor(233 * 0.8));   //自機画像描写
+            g.drawImage( Greize.IMG , 0, 0, 257, 240, 600, 150, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
+                        
+    }
+
+    DrawMessage( g );               //メッセージ描画
+
+    //カーソル表示
+    if(gPhase == tblFightPhase.continue )
+    {
+        g.fillText("⇒", 306, 378 + 23 * gCursor)    //カーソル描画
+    }
+
+}
+
+function AddExp( val )
+{
+    gPlayer.MS.Ex += val;             //経験値加算
+    while( gPlayer.MS.Lv < gPlayer.MS.Ex ){
+        gPlayer.MS.Lv++;              //レベルアップ
+        let HPpercent = gPlayer.MS.HP / gPlayer.MS.MAXHP;
+        gPlayer.MS.MAXHP += 4;        //HP加算
+        gPlayer.MS.HP = Math.floor( HPpercent * gPlayer.MS.MAXHP ); 
+    }
+
+}
+
+function SetUpMS( g ){
+    Barbtos1    = new MS(0, "バルバトス第一形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos1_MS);
+    Barbtos2    = new MS(1, "バルバトス第二形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos2_MS);
+    Greize      = new MS(2, "グレイズ", 3, 3, 0, 0, gImgFight_Greize_MS);
+}
+
+//メッセージ描画
+function DrawMessage( g )
+{
+    if( !gMessage1 )
+    {
+        return;
+    }
 
     g.font = FONT;          //文字フォントを指定
     g.fillStyle = FONTSTYLE;
-    g.fillText( "x=" + gPlayerX + 
-                " y=" + gPlayerY + 
-                " m=" + gMap[ my * MAP_WIDTH + mx ], 30, 375);  
+
+    let tblMessageposition = [10, 348 + 30];
+    
+    //メッセージウィンドゥ描写
+    g.drawImage( gImgMessage, 0, 0, 2000, 248, 0, 348, 800, 100 );
+
+    //機体名表示
+    if( gPhase != tblFightPhase.end ){
+        g.fillText( gPlayer.MS.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
+        g.fillText( "Lv" + gPlayer.MS.Lv , 500, 380);
+        g.fillText( gPlayer.MS.HP + "/" + gPlayer.MS.MAXHP, 575, 380);                      //HP
+        g.fillStyle = "#000000";    g.fillRect( 575, 382, 100, 5);
+        g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gPlayer.MS.HP / gPlayer.MS.MAXHP), 5);      //HPバー
+    }
+
+    //バトルコマンド表示
+    if( gPhase == tblFightPhase.continue )
+    {
+        g.drawImage(gImgCommand, 0, 0, 435, 249, 300, 348, 175, 100);
+        tblMessageposition[0] += 300; 
+    }
+
+    if( gPhase == tblFightPhase.enemyturn )
+    {
+        g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
+        g.font = "12px monospace";;          //文字フォントを指定
+        SetMessage("グレイズの攻撃", "バルバトスに2ダメージ");
+        tblMessageposition[0] += 200; 
+    }
+
+    if( gPhase == tblFightPhase.myturn )
+    {
+        g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
+        g.font = "12px monospace";;          //文字フォントを指定
+        SetMessage("バルバトスの攻撃", "グレイズに5ダメージ");
+        tblMessageposition[0] += 200; 
+    }
+
+    g.fillStyle = FONTSTYLE;
+    g.fillText( gMessage1, tblMessageposition[0], tblMessageposition[1]);					//	メッセージ１行目描画
+	if( gMessage2 ){
+		g.fillText( gMessage2, tblMessageposition[0], tblMessageposition[1] + 20);			//	メッセージ２行目描画
+	}
+    
 }
 
 function DrawTile(g, x, y, idx)
@@ -117,10 +294,45 @@ function DrawTile(g, x, y, idx)
                  TILESIZE, TILESIZE);
 }
 
+function SetMessage( v1, v2 )
+{
+	gMessage1 = v1;
+	gMessage2 = v2;
+}
+
 function LoadImage()
 {
-    gImgMap     = new Image(); gImgMap.src = gFileMap     //マップ画像読み込み
-    gImgPlayer  = new Image(); gImgPlayer.src = gFilePlayer  //プレイヤー
+    gImgMap     = new Image();
+    gImgMap.src = gFileMap;     //マップ画像読み込み
+    
+    gImgPlayer  = new Image();
+    gImgPlayer.src = gFilePlayer;  //プレイヤー
+    
+    gImgMessage = new Image();
+    gImgMessage.src = gMessage_window; //メッセージウィンドゥ
+
+    gImgCommand = new Image();
+    gImgCommand.src = gCommand_window; //メッセージウィンドゥ
+
+    gImgFight_Background = new Image();
+    gImgFight_Background.src = gFight_Background; //戦闘背景
+    
+    gImgFight_Mind_status = new Image();
+    gImgFight_Mind_status.src = gFight_Mind_status; //戦闘自分ステータス画像
+
+    gImgFight_Enemy_status = new Image();
+    gImgFight_Enemy_status.src = gFight_Enemy_status; //戦闘自分ステータス画像
+
+    //機体画像
+    gImgFight_Greize_MS = new Image();
+    gImgFight_Greize_MS.src = gFight_Greize_MS; //グレイズ
+
+    gImgFight_Barbatos1_MS = new Image();
+    gImgFight_Barbatos1_MS.src = gFight_Barbatos1_MS; //バルバトス1
+    
+    gImgFight_Barbatos2_MS = new Image();
+    gImgFight_Barbatos2_MS.src = gFight_Barbatos2_MS; //バルバトス2
+
 }
 
 //フィールド進行処理
@@ -139,16 +351,29 @@ function TickField()
     mx %= MAP_WIDTH;        //マップループ処理X
     my += MAP_HEIGHT;       //マップループ処理Y
     my %= MAP_HEIGHT;       //マップループ処理Y
+
     let m = gMap[ my * MAP_WIDTH + mx ];        //タイル番号
-    if( m != 0){
-        gMoveX = 0;     //移動禁止
-        gMoveY = 0;     //移動禁止
+
+    if( Math.abs( gMoveX ) + Math.abs( gMoveY ) == SCR_SPEED )	//	マス目移動が終わる直前
+    {
+        if(( m != 0 )&&( m != 48 )){
+            gMoveX = 0;     //移動禁止
+            gMoveY = 0;     //移動禁止
+        }
+
+        // if(m == 48){
+        //     SetMessage("止まるんじゃねぇぞ...", null);
+        // }
+
+        if(( Math.random() * 4 < 1 )&&(gPhase == tblFightPhase.pre)){        //ランダムエンカウント
+            gPhase = tblFightPhase.begin;         //摘出現
+        }
     }
 
-    gPlayerX += 8 * Math.sign( gMoveX );        //プレイヤー座標移動X
-    gPlayerY += 8 * Math.sign( gMoveY );        //プレイヤー座標移動Y
-    gMoveX -= 8 * Math.sign( gMoveX );          //移動消費量X
-    gMoveY -= 8 * Math.sign( gMoveY );          //移動消費量Y
+    gPlayerX += SCR_SPEED * Math.sign( gMoveX );        //プレイヤー座標移動X
+    gPlayerY += SCR_SPEED * Math.sign( gMoveY );        //プレイヤー座標移動Y
+    gMoveX -= SCR_SPEED * Math.sign( gMoveX );          //移動消費量X
+    gMoveY -= SCR_SPEED * Math.sign( gMoveY );          //移動消費量Y
 
     //マップループ処理
     gPlayerX += ( MAP_WIDTH * TILESIZE );
@@ -181,6 +406,49 @@ window.onkeydown = function ( ev )
     let c = ev.keyCode;
 
     gKey[ c ] = 1;
+    //gMessage1 = null;    //メッセージリセット
+    //gMessage2 = null;    //メッセージリセット
+
+    switch( gPhase ){
+        case tblFightPhase.begin:       //	戦闘コマンド選択フェーズ
+            gPhase = tblFightPhase.continue;
+            SetMessage( "　戦う", "　逃げる" );
+            break;
+
+        case tblFightPhase.continue:
+            if(( c == 13) || ( c == 90 )){      //Enterキー又はZキー
+                gPhase = tblFightPhase.enemyturn;
+                gMessage1 = " ";
+                gMessage2 = " ";
+            }else{
+                gCursor = 1 - gCursor;
+            }
+            break;
+
+        case tblFightPhase.enemyturn:
+            gPlayer.MS.HP -= 2;
+            gPhase = tblFightPhase.myturn;
+            break;
+
+        case tblFightPhase.myturn:
+            Greize.HP -=5;
+            if( Greize.HP <= 0 ){
+                SetMessage("敵機を倒した", null);
+                if( gPlayer.MS.Lv == 3){
+                    SetMessage("敵機を倒した", "バルバトスは第二形態になった");
+                    Barbtos2    = new MS(1, "バルバトス第二形態", Barbtos1.MAXHP, Barbtos1.MAXHP, Barbtos1.Ex, Barbtos1.Lv, gImgFight_Barbatos2_MS);
+                    gPlayer = new Player(Barbtos2);
+                }
+                gPhase = tblFightPhase.end;
+            }
+            break;
+
+        case tblFightPhase.end:
+            gMessage1 = null;
+            AddExp( 1 );    //経験値加算
+            gPhase = tblFightPhase.pre;
+            break;
+        }
 }
 
 window.onkeyup = function( ev )
@@ -214,12 +482,11 @@ window.onload = function()
 {
     LoadImage();
     
-    gScreen = document.createElement( "canvas" ) ;  //仮想画面を作成
+    gScreen = document.createElement( "canvas" );  //仮想画面を作成
     gScreen.width = WIDTH;
     gScreen.height = HEIGHT;
     
     WimSize();                                      //画面サイズ初期化
     window.addEventListener( "reize", function(){WimSize()});       //プラウザサイズ変更時にWimSize呼び出し
-    setInterval( function() { WimTimer();}, 33);     //33ms間隔で、WimTimer()を呼び出す
+    setInterval( function() { WimTimer();}, INTERVAL);     //33ms間隔で、WimTimer()を呼び出す
 }
-
