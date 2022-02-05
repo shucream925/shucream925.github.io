@@ -47,16 +47,10 @@ let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
 let gImgFight_Background;       //戦闘背景
 
 let gPlayer;
-let Barbtos1;
-let Barbtos2;
-let Greize;
+
 
 let gPhase = 0;     //戦闘フェーズ
-let gImgFight_Greize_MS;
-let gImgFight_Barbatos1_MS;
-let gImgFight_Barbatos2_MS;
-let gImgFight_Mind_status;
-let gImgFight_Enemy_status;
+let gStatus = 0;
 let gCursor = 0;        //カーソル位置
 
 
@@ -69,29 +63,22 @@ const gFight_Background = 'img/Fight_Background1.png';
 const gFight_Mind_status = 'img/Mind_status.png'
 const gFight_Enemy_status = 'img/Enemy_status.png'
 
-//機体画像
-const gFight_Greize_MS = 'img/Greize.png';
-const gFight_Barbatos1_MS = 'img/Barbtos1.png';
-const gFight_Barbatos2_MS = 'img/Barbtos2.png';
 
-//Class定義
-const MS = class{
-    constructor(ID, NAME, HP, MAXHP, Ex, Lv, IMG){
-       this.ID = ID;            //ID
-       this.NAME = NAME;        //NAME
-       this.HP = HP;            //HP
-       this.MAXHP = MAXHP;      //HPの最大値
-       this.Ex = Ex;      //HPの最大値
-       this.Lv = Lv;      //HPの最大値
-       this.IMG = IMG;      //HPの最大値
-    }
-}
 
 const Player = class{
-    constructor( MS ){
-    this.MS = MS;       //搭乗MS
+    constructor( MS1, MS2, MS3, MS4 ){
+    this.MS1 = MS1;       //搭乗MS1
+    this.MS2 = MS2;       //搭乗MS2
+    this.MS3 = MS3;       //搭乗MS3
+    this.MS4 = MS4;       //搭乗MS4
     }
 }
+
+var tblStatus = {
+    map : 0,
+    battle : 1,
+    menu : 2
+};
 
 //マップ定義
 const gMap = [
@@ -127,15 +114,7 @@ const gMap = [
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 ];
 
-// 戦闘フェイズテーブル
-var tblFightPhase = {
-    pre : 0,
-    begin : 1,
-    continue : 2,
-    myturn : 3,
-    enemyturn : 4,
-    end : 5
-};
+
 
 //Main描写
 function DrawMain()
@@ -143,19 +122,25 @@ function DrawMain()
     const g = gScreen.getContext( "2d" );   //2D描画コンテキストを取得
     
     if(init == false){
-        SetUpMS( g );       //MS情報の設定
+        SetUpMS( );       //MS情報の設定
         gPlayer     = new Player(Barbtos1);
         init = true;
     }
 
-    if( gPhase == tblFightPhase.pre){
+    if( gStatus == tblStatus.map){
         DrawMap( g );       //マップ描写
     }
-    else
+    else if( gStatus == tblStatus.battle )
     {
         DrawFight( g );     //戦闘描写
     }
+    else if( gStatus == tblStatus.menu )
+    {
+        DrawMap( g );       //マップ描写
+        DrawMenu( g );
+    }
 
+    //DrawMenu( g );
 }
 
 //マップ描画
@@ -188,46 +173,6 @@ function DrawMap( g ){
     DrawMessage( g );               //メッセージ描画
 }
 
-//戦闘描写
-function DrawFight( g )
-{
-    switch( gPhase ){
-        case tblFightPhase.begin:       //戦闘開始
-            SetMessage( " ", null);
-            g.drawImage( gImgFight_Background, 0, 0, 800, 350);                     //背景画像描写
-            g.drawImage( gPlayer.MS.IMG, 0, 0, 291, 233, 50, 150, Math.floor(291 * 0.8), Math.floor(233 * 0.8));   //自機画像描写
-            g.drawImage( Greize.IMG , 0, 0, 257, 240, 600, 150, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
-                        
-    }
-
-    DrawMessage( g );               //メッセージ描画
-
-    //カーソル表示
-    if(gPhase == tblFightPhase.continue )
-    {
-        g.fillText("⇒", 306, 378 + 23 * gCursor)    //カーソル描画
-    }
-
-}
-
-function AddExp( val )
-{
-    gPlayer.MS.Ex += val;             //経験値加算
-    while( gPlayer.MS.Lv < gPlayer.MS.Ex ){
-        gPlayer.MS.Lv++;              //レベルアップ
-        let HPpercent = gPlayer.MS.HP / gPlayer.MS.MAXHP;
-        gPlayer.MS.MAXHP += 4;        //HP加算
-        gPlayer.MS.HP = Math.floor( HPpercent * gPlayer.MS.MAXHP ); 
-    }
-
-}
-
-function SetUpMS( g ){
-    Barbtos1    = new MS(0, "バルバトス第一形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos1_MS);
-    Barbtos2    = new MS(1, "バルバトス第二形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos2_MS);
-    Greize      = new MS(2, "グレイズ", 3, 3, 0, 0, gImgFight_Greize_MS);
-}
-
 //メッセージ描画
 function DrawMessage( g )
 {
@@ -239,42 +184,46 @@ function DrawMessage( g )
     g.font = FONT;          //文字フォントを指定
     g.fillStyle = FONTSTYLE;
 
-    let tblMessageposition = [10, 348 + 30];
-    
-    //メッセージウィンドゥ描写
-    g.drawImage( gImgMessage, 0, 0, 2000, 248, 0, 348, 800, 100 );
+    // if( gPhase != tblFightPhase.pre )
+    // {
+        let tblMessageposition = [10, 348 + 30];
+        
+        //メッセージウィンドゥ描写
+        g.drawImage( gImgMessage, 0, 0, 2000, 248, 0, 348, 800, 100 );
 
-    //機体名表示
-    if( gPhase != tblFightPhase.end ){
-        g.fillText( gPlayer.MS.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
-        g.fillText( "Lv" + gPlayer.MS.Lv , 500, 380);
-        g.fillText( gPlayer.MS.HP + "/" + gPlayer.MS.MAXHP, 575, 380);                      //HP
-        g.fillStyle = "#000000";    g.fillRect( 575, 382, 100, 5);
-        g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gPlayer.MS.HP / gPlayer.MS.MAXHP), 5);      //HPバー
-    }
+        //機体名表示
+        if( gPhase != tblFightPhase.end )
+        {
+            g.fillText( gPlayer.MS1.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
+            g.fillText( "Lv" + gPlayer.MS1.Lv , 500, 380);
+            g.fillText( gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 575, 380);                      //HP
+            g.fillStyle = "#000000";    g.fillRect( 575, 382, 100, 5);
+            g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gPlayer.MS1.HP / gPlayer.MS1.MAXHP), 5);      //HPバー
+        }
 
-    //バトルコマンド表示
-    if( gPhase == tblFightPhase.continue )
-    {
-        g.drawImage(gImgCommand, 0, 0, 435, 249, 300, 348, 175, 100);
-        tblMessageposition[0] += 300; 
-    }
+        //バトルコマンド表示
+        if( gPhase == tblFightPhase.continue )
+        {
+            g.drawImage(gImgCommand, 0, 0, 435, 249, 300, 348, 175, 100);
+            tblMessageposition[0] += 300; 
+        }
 
-    if( gPhase == tblFightPhase.enemyturn )
-    {
-        g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
-        g.font = "12px monospace";;          //文字フォントを指定
-        SetMessage("グレイズの攻撃", "バルバトスに2ダメージ");
-        tblMessageposition[0] += 200; 
-    }
+        if( gPhase == tblFightPhase.enemyturn )
+        {
+            g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
+            g.font = "12px monospace";;          //文字フォントを指定
+            SetMessage("グレイズの攻撃", "バルバトスに2ダメージ");
+            tblMessageposition[0] += 200; 
+        }
 
-    if( gPhase == tblFightPhase.myturn )
-    {
-        g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
-        g.font = "12px monospace";;          //文字フォントを指定
-        SetMessage("バルバトスの攻撃", "グレイズに5ダメージ");
-        tblMessageposition[0] += 200; 
-    }
+        if( gPhase == tblFightPhase.myturn )
+        {
+            g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
+            g.font = "12px monospace";;          //文字フォントを指定
+            SetMessage("バルバトスの攻撃", "グレイズに"+arrayBarbatos[gCursor][1]+"ダメージ");
+            tblMessageposition[0] += 200; 
+        }
+    // }
 
     g.fillStyle = FONTSTYLE;
     g.fillText( gMessage1, tblMessageposition[0], tblMessageposition[1]);					//	メッセージ１行目描画
@@ -298,41 +247,6 @@ function SetMessage( v1, v2 )
 {
 	gMessage1 = v1;
 	gMessage2 = v2;
-}
-
-function LoadImage()
-{
-    gImgMap     = new Image();
-    gImgMap.src = gFileMap;     //マップ画像読み込み
-    
-    gImgPlayer  = new Image();
-    gImgPlayer.src = gFilePlayer;  //プレイヤー
-    
-    gImgMessage = new Image();
-    gImgMessage.src = gMessage_window; //メッセージウィンドゥ
-
-    gImgCommand = new Image();
-    gImgCommand.src = gCommand_window; //メッセージウィンドゥ
-
-    gImgFight_Background = new Image();
-    gImgFight_Background.src = gFight_Background; //戦闘背景
-    
-    gImgFight_Mind_status = new Image();
-    gImgFight_Mind_status.src = gFight_Mind_status; //戦闘自分ステータス画像
-
-    gImgFight_Enemy_status = new Image();
-    gImgFight_Enemy_status.src = gFight_Enemy_status; //戦闘自分ステータス画像
-
-    //機体画像
-    gImgFight_Greize_MS = new Image();
-    gImgFight_Greize_MS.src = gFight_Greize_MS; //グレイズ
-
-    gImgFight_Barbatos1_MS = new Image();
-    gImgFight_Barbatos1_MS.src = gFight_Barbatos1_MS; //バルバトス1
-    
-    gImgFight_Barbatos2_MS = new Image();
-    gImgFight_Barbatos2_MS.src = gFight_Barbatos2_MS; //バルバトス2
-
 }
 
 //フィールド進行処理
@@ -367,6 +281,7 @@ function TickField()
 
         if(( Math.random() * 4 < 1 )&&(gPhase == tblFightPhase.pre)){        //ランダムエンカウント
             gPhase = tblFightPhase.begin;         //摘出現
+            gStatus = tblStatus.battle;
         }
     }
 
@@ -396,8 +311,21 @@ function WimPaint()
 function WimTimer()
 {
     gFrame++;
-    TickField();            //フィールド進行処理
+    if(gStatus == tblStatus.map ){
+        TickField();            //フィールド進行処理
+    }
     WimPaint();
+}
+
+function DrawMenu( g )
+{
+    g.fillStyle = 'rgba(0,0,0,0.4)';
+    g.fillRect( 10, 10, 400, 150);
+
+    g.font = "18px monospace";          //文字フォントを指定
+    g.fillStyle = FONTSTYLE;
+    g.fillText( gPlayer.MS1.NAME + " Lv." + gPlayer.MS1.Lv +" HP:" + gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 15, 30);
+
 }
 
 // キー入力(DOWN)イベント
@@ -406,47 +334,52 @@ window.onkeydown = function ( ev )
     let c = ev.keyCode;
 
     gKey[ c ] = 1;
-    //gMessage1 = null;    //メッセージリセット
-    //gMessage2 = null;    //メッセージリセット
 
     switch( gPhase ){
+        case tblFightPhase.pre:
+            if( c == 77 ){
+                gStatus = tblStatus.menu;
+            }
+            if( c == 8 ){
+                gStatus = tblStatus.map;
+            }
+            break;
         case tblFightPhase.begin:       //	戦闘コマンド選択フェーズ
             gPhase = tblFightPhase.continue;
-            SetMessage( "　戦う", "　逃げる" );
+            SetMessage( " ", " " );
             break;
 
         case tblFightPhase.continue:
-            if(( c == 13) || ( c == 90 )){      //Enterキー又はZキー
+            if( c == 13){      //Enterキー又はZキー
                 gPhase = tblFightPhase.enemyturn;
                 gMessage1 = " ";
                 gMessage2 = " ";
-            }else{
-                gCursor = 1 - gCursor;
+            }else if(( c == 38 )&&( gCursor > 0 )){
+                gCursor = (gCursor - 1 ) %  4;
+            }else if( c == 40 ){
+                gCursor = (gCursor + 1 ) %  4;
             }
             break;
 
         case tblFightPhase.enemyturn:
-            gPlayer.MS.HP -= 2;
+            gPlayer.MS1.HP -= 2;
             gPhase = tblFightPhase.myturn;
             break;
 
         case tblFightPhase.myturn:
-            Greize.HP -=5;
+            Greize.HP -= arrayBarbatos[gCursor][1];
             if( Greize.HP <= 0 ){
                 SetMessage("敵機を倒した", null);
-                if( gPlayer.MS.Lv == 3){
-                    SetMessage("敵機を倒した", "バルバトスは第二形態になった");
-                    Barbtos2    = new MS(1, "バルバトス第二形態", Barbtos1.MAXHP, Barbtos1.MAXHP, Barbtos1.Ex, Barbtos1.Lv, gImgFight_Barbatos2_MS);
-                    gPlayer = new Player(Barbtos2);
-                }
+                gPlayer = CHK_Evolve( gPlayer.MS1 );
                 gPhase = tblFightPhase.end;
             }
             break;
 
         case tblFightPhase.end:
             gMessage1 = null;
-            AddExp( 1 );    //経験値加算
+            AddExp( gPlayer.MS1, 1 );    //経験値加算
             gPhase = tblFightPhase.pre;
+            gStatus = tblStatus.map;
             break;
         }
 }
