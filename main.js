@@ -32,7 +32,7 @@ let gAngle = 0;     //プレイヤーの角度
 let gEx = 0;        //初期経験値
 let gHP = START_HP;  //初期HP
 let gMAXHP = START_HP;  //最大HP
-let gLv = 1;        //プレイヤーのレベル
+let gLv = 5;        //プレイヤーのレベル
 
 let gScreen;        //仮想画面
 let gWidth;         //実画面の幅
@@ -142,7 +142,6 @@ function DrawMain()
         DrawMenu( g );
     }
 
-    //DrawMenu( g );
 }
 
 //マップ描画
@@ -233,7 +232,7 @@ function DrawMessage( g )
         {
             g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
             g.font = "12px monospace";;          //文字フォントを指定
-            SetMessage("グレイズの攻撃", "バルバトスに2ダメージ");
+            SetMessage("グレイズの攻撃", "バルバトスに"+damage_val( gPlayer.MS1, Greize )+"ダメージ");
             tblMessageposition[0] += 200; 
         }
 
@@ -241,7 +240,7 @@ function DrawMessage( g )
         {
             g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
             g.font = "12px monospace";;          //文字フォントを指定
-            SetMessage("バルバトスの攻撃", "グレイズに"+arrayBarbatos[gCursor][1]+"ダメージ");
+            SetMessage("バルバトスの攻撃", "グレイズに"+damage_val( Greize, gPlayer.MS1 )+"ダメージ");
             tblMessageposition[0] += 200; 
         }
     // }
@@ -399,19 +398,30 @@ window.onkeydown = function ( ev )
             break;
 
         case tblFightPhase.enemyturn:
-            gPlayer.MS1.HP -= 2;
+            if( gPlayer.MS1 != null){
+                gPlayer.MS1.HP -= damage_val( gPlayer.MS1, Greize );
+            }
+            if( gPlayer.MS2 != null){
+                gPlayer.MS2.HP -= damage_val( gPlayer.MS2, Greize );
+            }
+            if( gPlayer.MS3 != null){
+                gPlayer.MS3.HP -= damage_val( gPlayer.MS3, Greize );
+            }
             gPhase = tblFightPhase.myturn;
             break;
 
         case tblFightPhase.myturn:
-            Greize.HP -= arrayBarbatos[gCursor][1];
+            Greize.HP -= damage_val( Greize, gPlayer.MS1);
+            
             if( Greize.HP <= 0 ){
                 SetMessage("敵機を倒した", null);
                 gPlayer = new Player(CHK_Evolve( gPlayer.MS1 ), 
                                      CHK_Evolve( gPlayer.MS2 ),
                                      CHK_Evolve( gPlayer.MS3 ));
                 gPhase = tblFightPhase.end;
+                break;
             }
+            gPhase = tblFightPhase.enemyturn;
             break;
 
         case tblFightPhase.end:

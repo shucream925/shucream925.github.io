@@ -49,14 +49,17 @@ const gFight_Ryuseigo2_MS = 'img/Ryuseigo2.png';
 
 //Class定義
 const MS = class{
-    constructor(ID, NAME, HP, MAXHP, Ex, Lv, IMG, EVO){
+    constructor(ID, NAME, HP, MAXHP, ATT, DEF, SPD, Ex, Lv, IMG, EVO){
        this.ID = ID;            //ID
        this.NAME = NAME;        //NAME
        this.HP = HP;            //HP
        this.MAXHP = MAXHP;      //HPの最大値
-       this.Ex = Ex;      //HPの最大値
-       this.Lv = Lv;      //HPの最大値
-       this.IMG = IMG;      //HPの最大値
+       this.ATT = ATT;      //攻撃力
+       this.DEF = DEF;      //守備力
+       this.SPD = SPD;      //すばやさ
+       this.Ex = Ex;      //初期経験値
+       this.Lv = Lv;      //初期レベル
+       this.IMG = IMG;      //画像
        this.EVO = EVO;      //進化先MS
     }
 }
@@ -138,16 +141,17 @@ function LoadImage()
 戻値 : 無し
 ***************************************************/
 function SetUpMS( ){
-    BarbtosRupsRecs = new MS(8, "バルバトスルプスレクス", gHP, gMAXHP, gEx, gLv, gImgFight_BarbatosRupsRecs_MS, null);
-    BarbtosRups     = new MS(7, "バルバトスルプス", gHP, gMAXHP, gEx, gLv, gImgFight_BarbatosRups_MS, BarbtosRupsRecs);
-    Barbtos6        = new MS(6, "バルバトス第六形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos6_MS, BarbtosRups);
-    Barbtos5ground  = new MS(5, "バルバトス第五地上形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos5ground_MS, Barbtos6);
-    Barbtos5space   = new MS(4, "バルバトス第五宇宙形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos5space_MS, Barbtos5ground);
-    Barbtos4        = new MS(3, "バルバトス第四形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos4_MS, Barbtos5space);
-    Barbtos3        = new MS(2, "バルバトス第三形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos3_MS, Barbtos4);
-    Barbtos2        = new MS(1, "バルバトス第二形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos2_MS, Barbtos3);
-    Barbtos1        = new MS(0, "バルバトス第一形態", gHP, gMAXHP, gEx, gLv, gImgFight_Barbatos1_MS, Barbtos2);
-    GusionRebake    = new MS(9, "グシオンリベイク", gHP, gMAXHP, gEx, gLv, gImgFight_GusionRebake_MS, null);
-    Ryuseigo2       = new MS(10, "流星号", gHP, gMAXHP, gEx, gLv, gImgFight_Ryuseigo2_MS, null);
-    Greize          = new MS(11, "グレイズ", 3, 3, 0, 0, gImgFight_Greize_MS, null);
+    BarbtosRupsRecs = new MS(8, "バルバトスルプスレクス", gHP, gMAXHP, 70, 50, 65, gEx, gLv, gImgFight_BarbatosRupsRecs_MS, null);
+    BarbtosRups     = new MS(7, "バルバトスルプス", gHP, gMAXHP, 60, 40, 55, gEx, gLv, gImgFight_BarbatosRups_MS, BarbtosRupsRecs);
+    Barbtos6        = new MS(6, "バルバトス第六形態", gHP, gMAXHP, 52, 45, 45, gEx, gLv, gImgFight_Barbatos6_MS, BarbtosRups);
+    Barbtos5ground  = new MS(5, "バルバトス第五地上形態", gHP, gMAXHP, 48, 36, 45, gEx, gLv, gImgFight_Barbatos5ground_MS, Barbtos6);
+    Barbtos5space   = new MS(4, "バルバトス第五宇宙形態", gHP, gMAXHP, 48, 45, 45, gEx, gLv, gImgFight_Barbatos5space_MS, Barbtos5ground);
+    Barbtos4        = new MS(3, "バルバトス第四形態", gHP, gMAXHP, 48, 36, 45, gEx, gLv, gImgFight_Barbatos4_MS, Barbtos5space);
+    Barbtos3        = new MS(2, "バルバトス第三形態", gHP, gMAXHP, 44, 30, 40, gEx, gLv, gImgFight_Barbatos3_MS, Barbtos4);
+    Barbtos2        = new MS(1, "バルバトス第二形態", gHP, gMAXHP, 42, 30, 40, gEx, gLv, gImgFight_Barbatos2_MS, Barbtos3);
+    Barbtos1        = new MS(0, "バルバトス第一形態", 35, 35, 40, 30, 40, gEx, gLv, gImgFight_Barbatos1_MS, Barbtos2);
+
+    GusionRebake    = new MS(9, "グシオンリベイク", 40, 40, 42, 50, 40, gEx, gLv, gImgFight_GusionRebake_MS, null);
+    Ryuseigo2       = new MS(10, "流星号", 30, 30, 37, 40, 35, gEx, gLv, gImgFight_Ryuseigo2_MS, null);
+    Greize          = new MS(11, "グレイズ", 20, 20, 20, 20, 20, 0, 5, gImgFight_Greize_MS, null);
 }

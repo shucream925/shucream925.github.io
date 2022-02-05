@@ -1,6 +1,6 @@
 "use strict";
 
-let MS_HEIGHT = 150;
+const MS_HEIGHT = 150;
 
 // 戦闘フェイズテーブル
 var tblFightPhase = {
@@ -101,4 +101,14 @@ function CHK_Evolve( prm_MS ){
     {
         return prm_MS;
     }
+}
+
+function damage_val( prm_defence_MS, prm_Attack_MS ){
+    
+    let damage;
+
+    damage = Math.floor((prm_Attack_MS.ATT * 2) * ( prm_Attack_MS.Lv / 100)
+             - prm_defence_MS.DEF / 4 * ( prm_defence_MS.Lv / 100));
+    
+    return damage; 
 }
