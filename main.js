@@ -134,6 +134,7 @@ function DrawMain()
     }
     else if( gStatus == tblStatus.battle )
     {
+        if(gPhase == tblFightPhase.begin){ init_Fight() }
         DrawFight( g );     //戦闘描写
     }
     else if( gStatus == tblStatus.menu )
@@ -427,6 +428,8 @@ window.onkeydown = function ( ev )
         case tblFightPhase.end:
             gMessage1 = null;
             AddExp( gPlayer.MS1, 1 );    //経験値加算
+            AddExp( gPlayer.MS2, 1 );    //経験値加算
+            AddExp( gPlayer.MS3, 1 );    //経験値加算
             gPhase = tblFightPhase.pre;
             gStatus = tblStatus.map;
             break;

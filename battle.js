@@ -112,3 +112,7 @@ function damage_val( prm_defence_MS, prm_Attack_MS ){
     
     return damage; 
 }
+
+function init_Fight(){
+    Greize          = new MS(11, "グレイズ", 10, 10, 20, 20, 20, 0, 5, gImgFight_Greize_MS, null);
+}

@@ -153,5 +153,5 @@ function SetUpMS( ){
 
     GusionRebake    = new MS(9, "グシオンリベイク", 40, 40, 42, 50, 40, gEx, gLv, gImgFight_GusionRebake_MS, null);
     Ryuseigo2       = new MS(10, "流星号", 30, 30, 37, 40, 35, gEx, gLv, gImgFight_Ryuseigo2_MS, null);
-    Greize          = new MS(11, "グレイズ", 20, 20, 20, 20, 20, 0, 5, gImgFight_Greize_MS, null);
+    
 }
