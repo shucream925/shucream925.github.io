@@ -1,5 +1,6 @@
 "use strict";
 
+let MS_HEIGHT = 150;
 
 // 戦闘フェイズテーブル
 var tblFightPhase = {
@@ -14,20 +15,36 @@ var tblFightPhase = {
 //戦闘描写
 function DrawFight( g )
 {
-    switch( gPhase ){
-        case tblFightPhase.begin:       //戦闘開始
-            SetMessage( " ", null);
-            g.drawImage( gImgFight_Background, 0, 0, 800, 350);                     //背景画像描写
-            g.drawImage( gPlayer.MS1.IMG, 0, 0, 
-                                         gPlayer.MS1.IMG.naturalWidth, gPlayer.MS1.IMG.naturalHeight, 
-                                         50, 150, 
-                                         Math.floor( 200 ), Math.floor(gPlayer.MS1.IMG.naturalHeight * 200 / gPlayer.MS1.IMG.naturalWidth));   //自機画像描写
-            g.drawImage( Greize.IMG , 0, 0, 257, 240, 600, 150, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
-                        
+    SetMessage( " ", null);
+    
+    g.drawImage( gImgFight_Background, 0, 0, 800, 350);                     //背景画像描写
+
+    if(gPlayer.MS3 != null){
+        g.drawImage( gPlayer.MS3.IMG, 0, 0, 
+                    gPlayer.MS3.IMG.naturalWidth, gPlayer.MS3.IMG.naturalHeight, 
+                    120, 60, 
+                    Math.floor(gPlayer.MS3.IMG.naturalWidth * MS_HEIGHT / gPlayer.MS3.IMG.naturalHeight), MS_HEIGHT);   //自機画像描写
     }
 
-    DrawMessage( g );               //メッセージ描画
+    if(gPlayer.MS2 != null){
+        g.drawImage( gPlayer.MS2.IMG, 0, 0, 
+                    gPlayer.MS2.IMG.naturalWidth, gPlayer.MS2.IMG.naturalHeight, 
+                    70, 140, 
+                    Math.floor(gPlayer.MS2.IMG.naturalWidth * MS_HEIGHT / gPlayer.MS2.IMG.naturalHeight), MS_HEIGHT);   //自機画像描写
+    }
 
+    if(gPlayer.MS1 != null){
+        g.drawImage( gPlayer.MS1.IMG, 0, 0, 
+                    gPlayer.MS1.IMG.naturalWidth, gPlayer.MS1.IMG.naturalHeight, 
+                    20, 220, 
+                    Math.floor(gPlayer.MS1.IMG.naturalWidth * MS_HEIGHT / gPlayer.MS1.IMG.naturalHeight), MS_HEIGHT);   //自機画像描写
+    }
+                                    
+                                    
+    g.drawImage( Greize.IMG , 0, 0, 257, 240, 600, 150, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
+    
+    DrawMessage( g );               //メッセージ描画
+    
     //カーソル表示
     if(gPhase == tblFightPhase.continue )
     {
@@ -68,7 +85,7 @@ function LvUP( prm_MS ){
 /*************************************************** 
 概要 : 進化するか確認する
 引数 : prm_charactor 
-戻値 : prm_charactor
+戻値 : true
 ***************************************************/
 function CHK_Evolve( prm_MS ){
 
@@ -78,10 +95,10 @@ function CHK_Evolve( prm_MS ){
         prm_MS.EVO.Lv = prm_MS.Lv;              //Lv引継ぎ
         prm_MS.EVO.Ex = prm_MS.Ex;              //経験値引継ぎ         
         SetMessage("敵機を倒した", prm_MS.EVO.NAME + "に進化した");
-        return new Player(prm_MS.EVO);  
+        return prm_MS.EVO;  
     }
     else
     {
-        return new Player(prm_MS);
+        return prm_MS;
     }
 }

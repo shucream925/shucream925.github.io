@@ -3,6 +3,7 @@
 const   CHRHEIGHT = 32;                 //キャラの高さ
 const   CHRWIDTH = 32;                  //キャラの幅
 const   FONT = "24px monospace";        //使用フォント
+const   FONT_MARGE_SIZE = 30;                 //フォントサイズ
 const   FONTSTYLE = "#FFFFFF"
 const   WIDTH = 32 * 25;                //仮想画面サイズ。高さ
 const   HEIGHT = 32 * 14;               //仮想画面サイズ。幅
@@ -27,10 +28,12 @@ const   gKey = new Uint8Array( 0x100 );    //キー入力バッファ
 let init = false;
 let gFrame = 0;
 let gAngle = 0;     //プレイヤーの角度
+
 let gEx = 0;        //初期経験値
 let gHP = START_HP;  //初期HP
 let gMAXHP = START_HP;  //最大HP
 let gLv = 1;        //プレイヤーのレベル
+
 let gScreen;        //仮想画面
 let gWidth;         //実画面の幅
 let gHeight;        //実画面の高さ
@@ -70,7 +73,6 @@ const Player = class{
     this.MS1 = MS1;       //搭乗MS1
     this.MS2 = MS2;       //搭乗MS2
     this.MS3 = MS3;       //搭乗MS3
-    this.MS4 = MS4;       //搭乗MS4
     }
 }
 
@@ -123,7 +125,7 @@ function DrawMain()
     
     if(init == false){
         SetUpMS( );       //MS情報の設定
-        gPlayer     = new Player(Barbtos1);
+        gPlayer     = new Player(Barbtos1, GusionRebake, Ryuseigo2);
         init = true;
     }
 
@@ -186,7 +188,7 @@ function DrawMessage( g )
 
     // if( gPhase != tblFightPhase.pre )
     // {
-        let tblMessageposition = [10, 348 + 30];
+        let tblMessageposition = [10, 348 + FONT_MARGE_SIZE];
         
         //メッセージウィンドゥ描写
         g.drawImage( gImgMessage, 0, 0, 2000, 248, 0, 348, 800, 100 );
@@ -194,11 +196,30 @@ function DrawMessage( g )
         //機体名表示
         if( gPhase != tblFightPhase.end )
         {
-            g.fillText( gPlayer.MS1.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
-            g.fillText( "Lv" + gPlayer.MS1.Lv , 500, 380);
-            g.fillText( gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 575, 380);                      //HP
-            g.fillStyle = "#000000";    g.fillRect( 575, 382, 100, 5);
-            g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gPlayer.MS1.HP / gPlayer.MS1.MAXHP), 5);      //HPバー
+            if( gPlayer.MS1 != null){
+                g.fillStyle = FONTSTYLE;
+                g.fillText( gPlayer.MS1.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
+                g.fillText( "Lv" + gPlayer.MS1.Lv , 500, 348 + FONT_MARGE_SIZE);
+                g.fillText( gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 575, 348 + FONT_MARGE_SIZE);                      //HP
+                g.fillStyle = "#000000";    g.fillRect( 575, 382, 100, 4);
+                g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gPlayer.MS1.HP / gPlayer.MS1.MAXHP), 4);      //HPバー
+            }
+            if( gPlayer.MS2 != null){
+                g.fillStyle = FONTSTYLE;
+                g.fillText( gPlayer.MS2.NAME, tblMessageposition[0], tblMessageposition[1] + FONT_MARGE_SIZE);       //機体名
+                g.fillText( "Lv" + gPlayer.MS2.Lv , 500, 348 + FONT_MARGE_SIZE * 2);
+                g.fillText( gPlayer.MS2.HP + "/" + gPlayer.MS2.MAXHP, 575, 348 + FONT_MARGE_SIZE * 2);                      //HP
+                g.fillStyle = "#000000";    g.fillRect( 575, 382+ FONT_MARGE_SIZE, 100, 4);
+                g.fillStyle = "#3eb370";    g.fillRect( 575, 382 + FONT_MARGE_SIZE, 100 * (gPlayer.MS2.HP / gPlayer.MS2.MAXHP), 4);      //HPバー
+            }
+            if( gPlayer.MS3 != null){
+                g.fillStyle = FONTSTYLE;
+                g.fillText( gPlayer.MS3.NAME, tblMessageposition[0], tblMessageposition[1] + FONT_MARGE_SIZE * 2);       //機体名
+                g.fillText( "Lv" + gPlayer.MS3.Lv , 500, 348 + FONT_MARGE_SIZE * 3);
+                g.fillText( gPlayer.MS3.HP + "/" + gPlayer.MS3.MAXHP, 575, 348 + FONT_MARGE_SIZE * 3);                      //HP
+                g.fillStyle = "#000000";    g.fillRect( 575, 382+ FONT_MARGE_SIZE*2, 100, 4);
+                g.fillStyle = "#3eb370";    g.fillRect( 575, 382 + FONT_MARGE_SIZE*2, 100 * (gPlayer.MS3.HP / gPlayer.MS3.MAXHP), 4);      //HPバー
+            }
         }
 
         //バトルコマンド表示
@@ -319,13 +340,33 @@ function WimTimer()
 
 function DrawMenu( g )
 {
+    // メニューウィンドウ表示
     g.fillStyle = 'rgba(0,0,0,0.4)';
     g.fillRect( 10, 10, 400, 150);
 
     g.font = "18px monospace";          //文字フォントを指定
     g.fillStyle = FONTSTYLE;
-    g.fillText( gPlayer.MS1.NAME + " Lv." + gPlayer.MS1.Lv +" HP:" + gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 15, 30);
+    
+    //項目表示
+    g.fillText( "機体名", 15, 30 + 18 * 0);
+    g.fillText( "レベル", 220, 30 + 18 * 0);
+    g.fillText( "HP", 300, 30 + 18 * 0);
 
+    if( gPlayer.MS1 != null){
+        g.fillText( gPlayer.MS1.NAME, 15, 30 + 18 * 1);
+        g.fillText( " Lv." + gPlayer.MS1.Lv, 220, 30 + 18 * 1);
+        g.fillText( " HP:" + gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 300, 30 + 18 * 1);
+    }
+    if( gPlayer.MS2 != null){
+        g.fillText( gPlayer.MS2.NAME, 15, 30 + 18 * 2);
+        g.fillText( " Lv." + gPlayer.MS2.Lv, 220, 30 + 18 * 2);
+        g.fillText( " HP:" + gPlayer.MS2.HP + "/" + gPlayer.MS2.MAXHP, 300, 30 + 18 * 2);
+    }
+    if( gPlayer.MS3 != null){
+        g.fillText( gPlayer.MS3.NAME, 15, 30 + 18 * 3);
+        g.fillText( " Lv." + gPlayer.MS3.Lv, 220, 30 + 18 * 3);
+        g.fillText( " HP:" + gPlayer.MS3.HP + "/" + gPlayer.MS3.MAXHP, 300, 30 + 18 * 3);
+    }
 }
 
 // キー入力(DOWN)イベント
@@ -336,14 +377,10 @@ window.onkeydown = function ( ev )
     gKey[ c ] = 1;
 
     switch( gPhase ){
-        case tblFightPhase.pre:
-            if( c == 77 ){
-                gStatus = tblStatus.menu;
-            }
-            if( c == 8 ){
-                gStatus = tblStatus.map;
-            }
+        case tblFightPhase.pre:       //
+            gStatus = keydown_map( c, gStatus );
             break;
+
         case tblFightPhase.begin:       //	戦闘コマンド選択フェーズ
             gPhase = tblFightPhase.continue;
             SetMessage( " ", " " );
@@ -370,7 +407,9 @@ window.onkeydown = function ( ev )
             Greize.HP -= arrayBarbatos[gCursor][1];
             if( Greize.HP <= 0 ){
                 SetMessage("敵機を倒した", null);
-                gPlayer = CHK_Evolve( gPlayer.MS1 );
+                gPlayer = new Player(CHK_Evolve( gPlayer.MS1 ), 
+                                     CHK_Evolve( gPlayer.MS2 ),
+                                     CHK_Evolve( gPlayer.MS3 ));
                 gPhase = tblFightPhase.end;
             }
             break;
@@ -382,6 +421,20 @@ window.onkeydown = function ( ev )
             gStatus = tblStatus.map;
             break;
         }
+}
+
+function keydown_map( prm_c, prm_gStatus )
+{
+
+    if( prm_c == 77 ){
+        return tblStatus.menu;
+    }
+
+    if( prm_c == 8 ){
+        return tblStatus.map;
+    }
+
+    return prm_gStatus;
 }
 
 window.onkeyup = function( ev )
