@@ -49,6 +49,7 @@ let gImgCommand;    //メッセージ画像
 let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
 let gImgFight_Background;       //戦闘背景
+let MS_num;
 
 
 let Fight_command = [
@@ -137,7 +138,8 @@ function DrawMain()
     
     if(init == false){
         SetUpMS( );       //MS情報の設定
-        gPlayer     = new Player(Barbtos1, GusionRebake, Ryuseigo2);
+        gPlayer     = new Player(Barbtos1, GusionRebake, null);
+        MS_num = 2;
         init = true;
     }
 

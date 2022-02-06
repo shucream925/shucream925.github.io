@@ -259,13 +259,13 @@ function battle_onkeydown( c ){
             }
             
             if( CHK_CLICK_ENTER(c) == true ){   //Enterキー判定   
-                if(Order_MS_num < 2){
-                    Fight_command[ Order_MS_num ][ 1 ] = gCursor;
+                if(Order_MS_num < MS_num - 1){
+                    Fight_command[ Order_MS_num ][ 1 ] = gCursor+1;
                     gCursor = 0;        //カーソル位置リセット
                     Order_MS_num += 1;  //MS番号更新
                     break;
-                }else if(Order_MS_num >= 2){
-                    Fight_command[ Order_MS_num ][ 1 ] = gCursor;
+                }else if(Order_MS_num >= MS_num - 1){
+                    Fight_command[ Order_MS_num ][ 1 ] = gCursor+1;
                     gPhase = tblFightPhase.start;
                     Order_MS_num = 4;
                     break;
@@ -277,11 +277,11 @@ function battle_onkeydown( c ){
             if( CHK_CLICK_ENTER(c) == true ){
                 if( Battle_order[0][1].HP <= 0 ){
                     gPhase = tblFightPhase.preend;
-                    Order_MS_num = 4;
+                    Order_MS_num = MS_num + 1;
                     break;   
                 }
 
-                if(Battle_order_count >= 4){
+                if(Battle_order_count >= MS_num + 1){
                     gPhase = tblFightPhase.command;
                     Battle_order_count = 0;
                     Order_MS_num = 0;
@@ -291,6 +291,7 @@ function battle_onkeydown( c ){
                 let Enemy_target;
                 if( Battle_order[Battle_order_count][0] == 0 ){   //敵機か味方か
                     //味方の場合 Battle_order[0][2]
+                    //Fight_command[ Order_MS_num ][ 1 ]
                     Enemy_target = Battle_order[0][1];
                     switch( Battle_order[Battle_order_count][1].ID ){
                         case 1:
@@ -318,7 +319,7 @@ function battle_onkeydown( c ){
                 }else{
                     //敵の場合
                     //ターゲット機のランダム選択
-                    Enemy_target = Math.floor((Math.random()*3) % 3);
+                    Enemy_target = Math.floor((Math.random()*MS_num) % MS_num);
                     switch( Enemy_target ){
                         case 0:
                             gPlayer.MS1.HP -= damage_val( gPlayer.MS1, Greize );
@@ -346,12 +347,24 @@ function battle_onkeydown( c ){
             break;
         case tblFightPhase.preend:
             if( CHK_CLICK_ENTER(c) == true){
-                AddExp( gPlayer.MS1, 1 );    //経験値加算
-                AddExp( gPlayer.MS2, 1 );    //経験値加算
-                AddExp( gPlayer.MS3, 1 );    //経験値加算
-                gPlayer = new Player(CHK_Evolve( gPlayer.MS1 ), 
-                                    CHK_Evolve( gPlayer.MS2 ),
-                                    CHK_Evolve( gPlayer.MS3 ));
+                let tmp_MS1 = null;
+                let tmp_MS2 = null;
+                let tmp_MS3 = null;
+                if(gPlayer.MS1 != null){
+                    AddExp( gPlayer.MS1, 1 );    //経験値加算
+                    tmp_MS1 = CHK_Evolve( gPlayer.MS1 );
+                }
+                if(gPlayer.MS2 != null){
+                    AddExp( gPlayer.MS2, 1 );    //経験値加算
+                    tmp_MS2 = CHK_Evolve( gPlayer.MS2 );
+                }
+                if(gPlayer.MS3 != null){
+                    AddExp( gPlayer.MS3, 1 );    //経験値加算
+                    tmp_MS3 = CHK_Evolve( gPlayer.MS3 );
+                }
+                gPlayer = new Player(tmp_MS1, 
+                                    tmp_MS2,
+                                    tmp_MS3);
                 gPhase = tblFightPhase.end;
             }
             break;
@@ -372,4 +385,8 @@ function CHK_CLICK_ENTER(c){
     }else{
         return false;
     }
+}
+
+function Battle_command_attack(){
+    
 }
