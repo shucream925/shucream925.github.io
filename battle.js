@@ -2,14 +2,19 @@
 
 const MS_HEIGHT = 150;
 
+let Fight_order;
+let Fight_order_count;
+
 // 戦闘フェイズテーブル
 var tblFightPhase = {
     pre : 0,
     begin : 1,
     continue : 2,
-    myturn : 3,
-    enemyturn : 4,
-    end : 5
+    start : 3,
+    myturn : 4,
+    enemyturn : 5,
+    preend : 6,
+    end : 7
 };
 
 //戦闘描写
@@ -19,27 +24,25 @@ function DrawFight( g )
     
     g.drawImage( gImgFight_Background, 0, 0, 800, 350);                     //背景画像描写
 
+    //機体画像表示
     if(gPlayer.MS3 != null){
         g.drawImage( gPlayer.MS3.IMG, 0, 0, 
                     gPlayer.MS3.IMG.naturalWidth, gPlayer.MS3.IMG.naturalHeight, 
                     120, 60, 
                     Math.floor(gPlayer.MS3.IMG.naturalWidth * MS_HEIGHT / gPlayer.MS3.IMG.naturalHeight), MS_HEIGHT);   //自機画像描写
     }
-
     if(gPlayer.MS2 != null){
         g.drawImage( gPlayer.MS2.IMG, 0, 0, 
                     gPlayer.MS2.IMG.naturalWidth, gPlayer.MS2.IMG.naturalHeight, 
                     70, 140, 
                     Math.floor(gPlayer.MS2.IMG.naturalWidth * MS_HEIGHT / gPlayer.MS2.IMG.naturalHeight), MS_HEIGHT);   //自機画像描写
     }
-
     if(gPlayer.MS1 != null){
         g.drawImage( gPlayer.MS1.IMG, 0, 0, 
                     gPlayer.MS1.IMG.naturalWidth, gPlayer.MS1.IMG.naturalHeight, 
                     20, 220, 
                     Math.floor(gPlayer.MS1.IMG.naturalWidth * MS_HEIGHT / gPlayer.MS1.IMG.naturalHeight), MS_HEIGHT);   //自機画像描写
-    }
-                                    
+    }                               
                                     
     g.drawImage( Greize.IMG , 0, 0, 257, 240, 600, 150, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
     
@@ -48,10 +51,11 @@ function DrawFight( g )
     //カーソル表示
     if(gPhase == tblFightPhase.continue )
     {
-        g.fillText(arrayBarbatos[0][0], 326,378 + 23 * 0)
-        g.fillText(arrayBarbatos[1][0], 326,378 + 23 * 1)
-        g.fillText(arrayBarbatos[2][0], 326,378 + 23 * 2)
-        g.fillText("⇒", 306, 378 + 23 * gCursor)    //カーソル描画
+        g.fillText("こうげき ", 326,373 + 23 * 0);
+        g.fillText("とくぎ", 326,373 + 23 * 1);
+        g.fillText("ぼうぎょ", 326,373 + 23 * 2);
+        g.fillText("アイテム", 326,373 + 23 * 3);
+        g.fillText("⇒", 306, 373 + 23 * gCursor)    //カーソル描画
     }
 
 }
@@ -114,5 +118,9 @@ function damage_val( prm_defence_MS, prm_Attack_MS ){
 }
 
 function init_Fight(){
+    CommandCount = 0;
+    Fight_order = [11,gPlayer.MS1.ID,gPlayer.MS2.ID,gPlayer.MS3.ID,null,null];
+    Fight_order_count = 5;
+    Fight_command = [[0,0],[0,0],[0,0],[0,0]];
     Greize          = new MS(11, "グレイズ", 10, 10, 20, 20, 20, 0, 5, gImgFight_Greize_MS, null);
 }
