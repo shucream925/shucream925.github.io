@@ -5,6 +5,7 @@ const   CHRWIDTH = 32;                  //キャラの幅
 const   FONT = "24px monospace";        //使用フォント
 const   FONT_MARGE_SIZE = 30;                 //フォントサイズ
 const   FONTSTYLE = "#FFFFFF"
+const   HP_BAR_STYLE = "#3eb370"        //HPバーの色
 const   WIDTH = 32 * 25;                //仮想画面サイズ。高さ
 const   HEIGHT = 32 * 14;               //仮想画面サイズ。幅
 const   INTERVAL = 33;                  //フレーム呼出し間隔
@@ -48,11 +49,7 @@ let gImgCommand;    //メッセージ画像
 let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
 let gImgFight_Background;       //戦闘背景
-let CommandCount;
-let Enemy_target;
-let MS_name;
-let MS_damage;
-let Enemy_target_MS;
+
 
 let Fight_command = [
     //tblFight_command, 
@@ -95,13 +92,7 @@ var tblStatus = {
     menu : 2
 };
 
-// 戦闘コマンドステータス
-var tblFight_command = {
-    Attack : 1,
-    Special : 2,
-    Deffence : 3,
-    Item : 4
-};
+
 
 //マップ定義
 const gMap = [
@@ -156,7 +147,7 @@ function DrawMain()
     else if( gStatus == tblStatus.battle )
     {
         if(gPhase == tblFightPhase.begin){ init_Fight() }
-        DrawFight( g );     //戦闘描写
+            DrawFight( g );     //戦闘描写
     }
     else if( gStatus == tblStatus.menu )
     {
@@ -203,81 +194,6 @@ function DrawMessage( g )
     {
         return;
     }
-
-    g.fillStyle = FONTSTYLE;
-
-    let tblMessageposition = [10, 348 + FONT_MARGE_SIZE];
-    
-    //メッセージウィンドゥ描写
-    g.drawImage( gImgMessage, 0, 0, 2000, 248, 0, 348, 800, 100 );
-
-    //機体名表示
-    if( gPhase != tblFightPhase.end )
-    {
-        if( gPlayer.MS1 != null){
-            g.fillStyle = FONTSTYLE;
-            if( CommandCount == 0){
-                g.font = FONT; 
-            }else{
-                g.font = "18px monospace";
-            }
-            g.fillText( gPlayer.MS1.NAME, tblMessageposition[0], tblMessageposition[1]);       //機体名
-            g.font = FONT;
-            g.fillText( "Lv" + gPlayer.MS1.Lv , 500, 348 + FONT_MARGE_SIZE);
-            g.fillText( gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 575, 348 + FONT_MARGE_SIZE);                      //HP
-            g.fillStyle = "#000000";    g.fillRect( 575, 382, 100, 4);
-            g.fillStyle = "#3eb370";    g.fillRect( 575, 382, 100 * (gPlayer.MS1.HP / gPlayer.MS1.MAXHP), 4);      //HPバー
-        }
-        if( gPlayer.MS2 != null){
-            g.fillStyle = FONTSTYLE;
-            if( CommandCount == 1){
-                g.font = FONT; 
-            }else{
-                g.font = "18px monospace";
-            }
-            g.fillText( gPlayer.MS2.NAME, tblMessageposition[0], tblMessageposition[1] + FONT_MARGE_SIZE);       //機体名
-            g.font = FONT;
-            g.fillText( "Lv" + gPlayer.MS2.Lv , 500, 348 + FONT_MARGE_SIZE * 2);
-            g.fillText( gPlayer.MS2.HP + "/" + gPlayer.MS2.MAXHP, 575, 348 + FONT_MARGE_SIZE * 2);                      //HP
-            g.fillStyle = "#000000";    g.fillRect( 575, 382+ FONT_MARGE_SIZE, 100, 4);
-            g.fillStyle = "#3eb370";    g.fillRect( 575, 382 + FONT_MARGE_SIZE, 100 * (gPlayer.MS2.HP / gPlayer.MS2.MAXHP), 4);      //HPバー
-        }
-        if( gPlayer.MS3 != null){
-            g.fillStyle = FONTSTYLE;
-            if( CommandCount == 2){
-                g.font = FONT; 
-            }else{
-                g.font = "18px monospace";
-            }
-            g.fillText( gPlayer.MS3.NAME, tblMessageposition[0], tblMessageposition[1] + FONT_MARGE_SIZE * 2);       //機体名
-            g.font = FONT;
-            g.fillText( "Lv" + gPlayer.MS3.Lv , 500, 348 + FONT_MARGE_SIZE * 3);
-            g.fillText( gPlayer.MS3.HP + "/" + gPlayer.MS3.MAXHP, 575, 348 + FONT_MARGE_SIZE * 3);                      //HP
-            g.fillStyle = "#000000";    g.fillRect( 575, 382+ FONT_MARGE_SIZE*2, 100, 4);
-            g.fillStyle = "#3eb370";    g.fillRect( 575, 382 + FONT_MARGE_SIZE*2, 100 * (gPlayer.MS3.HP / gPlayer.MS3.MAXHP), 4);      //HPバー
-        }
-        g.fillText( Greize.HP + "/" + Greize.MAXHP, 400, 100);                      //HP
-        g.fillText( Fight_order_count, 400, 125);                      //HP
-        g.fillText( gPhase, 400, 150);                      //HP
-    }
-
-    //バトルコマンド表示
-    if( gPhase == tblFightPhase.continue )
-    {
-        g.drawImage(gImgCommand, 0, 0, 435, 249, 300, 348, 175, 100);
-        tblMessageposition[0] += 300; 
-    }
-
-    if(( gPhase >= tblFightPhase.myturn )||( gPhase <= tblFightPhase.preend ))
-    {           
-        if((Fight_order_count >= 0 )&&(Fight_order_count < 5 )){
-            g.drawImage(gImgCommand, 0, 0, 435, 249, 200, 348, 275, 100);
-            g.font = "18px monospace";;          //文字フォントを指定
-            SetMessage(MS_name + "の攻撃", Enemy_target_MS + "に" + MS_damage +"ダメージ");
-            tblMessageposition[0] += 200; 
-        }
-    }
-
 
     g.fillStyle = FONTSTYLE;
     g.fillText( gMessage1, tblMessageposition[0], tblMessageposition[1]);					//	メッセージ１行目描画
@@ -409,137 +325,12 @@ window.onkeydown = function ( ev )
 
     gKey[ c ] = 1;
 
-    switch( gPhase ){
-        case tblFightPhase.pre:       //
-            gStatus = keydown_map( c, gStatus );
-            break;
-
-        case tblFightPhase.begin:       //	戦闘コマンド選択フェーズ
-            gPhase = tblFightPhase.continue;
-            SetMessage( " ", " " );
-            break;
-
-        case tblFightPhase.continue:
-            //コマンドウィンドウ
-            if(( c == 38 )&&( gCursor > 0 )){
-                gCursor = gCursor - 1 ;
-                break;
-            }else if(( c == 38 )&&( gCursor <= 0 )){
-                gCursor = 3 ;
-                break;
-            }else if( c == 40 ){
-                gCursor = (gCursor + 1 ) %  4;
-                break;
-            }
-            
-            if(( c == 13)&&(CommandCount < 2)){      //Enterキー
-                Fight_command[ CommandCount ][ 1 ] = gCursor  + 1;
-                gCursor = 0;
-                CommandCount += 1;
-                break;
-            }
-            if(( c == 13)&&(CommandCount >= 2)){
-                gPhase = tblFightPhase.start;
-                //SetMessage( " ", " " );
-                CommandCount = 4;
-                break;
-            }
-            break;
-        
-
-        case tblFightPhase.start:
-            if( Greize.HP <= 0 ){
-                gPhase = tblFightPhase.preend;
-                break;
-            }
-            if(Fight_order_count >= 4){
-                Fight_order_count = 0;
-            }
-            if(Fight_order[Fight_order_count] == 11){
-                gPhase = tblFightPhase.enemyturn;
-            }else{
-                gPhase = tblFightPhase.myturn;
-            }
-            break;
-
-        case tblFightPhase.myturn:
-            if( c = 13){
-                
-                if(Fight_order[Fight_order_count] == gPlayer.MS1.ID){
-                    Greize.HP -= damage_val( Greize, gPlayer.MS1);
-                    MS_name = gPlayer.MS1.NAME;
-                    MS_damage = damage_val( Greize, gPlayer.MS1);
-                    CommandCount = 0;
-                }
-                if(Fight_order[Fight_order_count] == gPlayer.MS2.ID){
-                    Greize.HP -= damage_val( Greize, gPlayer.MS2);
-                    MS_name = gPlayer.MS2.NAME;
-                    MS_damage = damage_val( Greize, gPlayer.MS2);
-                    CommandCount = 1;
-                }
-                if(Fight_order[Fight_order_count] == gPlayer.MS3.ID){
-                    Greize.HP -= damage_val( Greize, gPlayer.MS3);
-                    MS_name = gPlayer.MS3.NAME;
-                    MS_damage = damage_val( Greize, gPlayer.MS3);
-                    CommandCount = 2;
-                }
-                Enemy_target_MS = Greize.NAME;
-                Fight_order_count++;
-
-                gPhase = tblFightPhase.start;
-                break;
-            }
-            break;
-        case tblFightPhase.enemyturn:
-            if( c = 13){ 
-
-                Enemy_target = 1;//Math.floor((Math.random()*3) % 3);
-                CommandCount = Enemy_target;
-                gPhase = tblFightPhase.start;
-
-                if( Enemy_target == 0){
-                    gPlayer.MS1.HP -= damage_val( gPlayer.MS1, Greize );
-                    MS_name = Greize.NAME;
-                    MS_damage = damage_val( gPlayer.MS1, Greize );
-                    Enemy_target_MS = gPlayer.MS1.NAME;
-                }
-                if( Enemy_target == 1){
-                    gPlayer.MS2.HP -= damage_val( gPlayer.MS2, Greize );
-                    MS_name = Greize.NAME;
-                    MS_damage = damage_val( gPlayer.MS2, Greize );
-                    Enemy_target_MS = gPlayer.MS2.NAME;
-                }
-                if( Enemy_target == 2){
-                    gPlayer.MS3.HP -= damage_val( gPlayer.MS3, Greize );
-                    MS_name = Greize.NAME;
-                    MS_damage = damage_val( gPlayer.MS3, Greize );
-                    Enemy_target_MS = gPlayer.MS3.NAME;
-                }
-                Fight_order_count++;
-                gPhase = tblFightPhase.start;
-            }
-            break;
-        
-        case tblFightPhase.preend:
-            if(c == 13){
-                SetMessage("敵機を倒した", null);
-                AddExp( gPlayer.MS1, 1 );    //経験値加算
-                AddExp( gPlayer.MS2, 1 );    //経験値加算
-                AddExp( gPlayer.MS3, 1 );    //経験値加算
-                gPlayer = new Player(CHK_Evolve( gPlayer.MS1 ), 
-                                    CHK_Evolve( gPlayer.MS2 ),
-                                    CHK_Evolve( gPlayer.MS3 ));
-                gPhase = tblFightPhase.end;
-            }
-            break;
-        case tblFightPhase.end:
-            if(c == 13){
-                gPhase = tblFightPhase.pre;
-                gStatus = tblStatus.map;
-                SetMessage(null,null);
-            }
-            break;
+    if( gStatus == tblStatus.map){
+        gStatus = keydown_map( c, gStatus );
+    }else if( gStatus == tblStatus.battle){
+        battle_onkeydown( c );
     }
+
 }
 
 function keydown_map( prm_c, prm_gStatus )
