@@ -10,6 +10,8 @@ let Enemy_target;
 let MS_name = null;
 let MS_damage;
 let Enemy_target_MS;
+let toatl_MS_num;
+let toatl_enemyMS_num;
 
 // 戦闘フェイズテーブル
 var tblFightPhase = {
@@ -60,9 +62,9 @@ function DrawFight( g )
                     20, 220, 
                     Math.floor(gPlayer.MS1.IMG.naturalWidth * MS_HEIGHT / gPlayer.MS1.IMG.naturalHeight), MS_HEIGHT);   //自機画像描写
     }                               
-           
-    g.drawImage( Greize.IMG , 0, 0, 257, 240, 600, 150, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
-    
+    for( var i = 0; i < toatl_enemyMS_num; i++){
+        g.drawImage( Greize.IMG , 0, 0, 257, 240, 600-50*i, 220-80*i, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
+    }
 
     g.fillStyle = FONTSTYLE;
     
@@ -116,7 +118,7 @@ function DrawFight( g )
         }
         // g.fillText( Greize.HP + "/" + Greize.MAXHP, 400, 100);                      //HP
         // g.fillText( Battle_order_count, 400, 125);                      //HP
-        // g.fillText( gPhase, 400, 150);                      //HP
+        g.fillText( toatl_enemyMS_num, 400, 150);                      //HP
     }
 
 
@@ -138,7 +140,7 @@ function DrawFight( g )
             g.fillText("⇒", 306, 373 + 23 * gCursor)    //カーソル描画
             break;
         case tblFightPhase.start:
-            if((Battle_order_count < 5 )&&(MS_name != null)){
+            if((Battle_order_count <= toatl_MS_num )&&(MS_name != null)){
                 g.fillStyle = "#000000";
                 g.fillRect( 30, 30, WIDTH-60, 25);
                 g.font = "18px monospace";;          //文字フォントを指定
@@ -218,20 +220,42 @@ function damage_val( prm_defence_MS, prm_Attack_MS ){
 }
 
 function init_Fight(){
+    let random_number = 1 + Math.floor((Math.random()*3) % 3);
+
     //敵機設定
     Greize = new MS(11, "グレイズ", 10, 10, 20, 20, 20, 0, 5, gImgFight_Greize_MS, null);
-    MS_name = null;
-    Order_MS_num = 0;
-    Battle_order = [[11,Greize],
-                [0, gPlayer.MS1],
-                [0, gPlayer.MS2],
-                [0, gPlayer.MS3],
-                [null, null],
-                [null, null]  //戦闘の順番
-    ];
-    Battle_order_count = 0;
-    Fight_command = [[0,0],[0,0],[0,0],[0,0]];
     
+    /**** 初期化 ****/
+    Battle_order_count = 0;
+    toatl_enemyMS_num = 0;
+    MS_name = null;
+    Fight_command = [[0,0],[0,0],[0,0],[0,0]];
+
+    Order_MS_num = 0;
+    // Battle_order = [[11,Greize],
+    //             [0, gPlayer.MS1],
+    //             [0, gPlayer.MS2],
+    //             [0, gPlayer.MS3],
+    //             [null, null],
+    //             [null, null]  //戦闘の順番
+    // ];
+
+    Battle_order = [[0, gPlayer.MS1]];
+    toatl_MS_num = 1;
+
+    if( gPlayer.MS2 != null ){
+        Battle_order.push([0, gPlayer.MS2]);
+        toatl_MS_num++;
+    }
+    if( gPlayer.MS3 != null ){
+        Battle_order.push([0, gPlayer.MS3]);
+        toatl_MS_num++;
+    }
+    for( var i=1; i <= random_number; i++){
+        Battle_order.push([1, Greize]);
+        toatl_enemyMS_num++;
+        toatl_MS_num++;
+    }
 }
 
 function battle_onkeydown( c ){
@@ -267,7 +291,7 @@ function battle_onkeydown( c ){
                 }else if(Order_MS_num >= MS_num - 1){
                     Fight_command[ Order_MS_num ][ 1 ] = gCursor+1;
                     gPhase = tblFightPhase.start;
-                    Order_MS_num = 4;
+                    Order_MS_num = toatl_MS_num - toatl_enemyMS_num;
                     break;
                 }
             }
@@ -275,13 +299,13 @@ function battle_onkeydown( c ){
         
         case tblFightPhase.start:
             if( CHK_CLICK_ENTER(c) == true ){
-                if( Battle_order[0][1].HP <= 0 ){
+                if( Battle_order[toatl_MS_num-1][1].HP <= 0 ){
                     gPhase = tblFightPhase.preend;
                     Order_MS_num = MS_num + 1;
                     break;   
                 }
 
-                if(Battle_order_count >= MS_num + 1){
+                if(Battle_order_count >= toatl_MS_num){
                     gPhase = tblFightPhase.command;
                     Battle_order_count = 0;
                     Order_MS_num = 0;
@@ -291,8 +315,7 @@ function battle_onkeydown( c ){
                 let Enemy_target;
                 if( Battle_order[Battle_order_count][0] == 0 ){   //敵機か味方か
                     //味方の場合 Battle_order[0][2]
-                    //Fight_command[ Order_MS_num ][ 1 ]
-                    Enemy_target = Battle_order[0][1];
+                    Enemy_target = Battle_order[toatl_MS_num-1][1];
                     switch( Battle_order[Battle_order_count][1].ID ){
                         case 1:
                             Enemy_target.HP -= damage_val( Enemy_target, gPlayer.MS1);
@@ -363,8 +386,8 @@ function battle_onkeydown( c ){
                     tmp_MS3 = CHK_Evolve( gPlayer.MS3 );
                 }
                 gPlayer = new Player(tmp_MS1, 
-                                    tmp_MS2,
-                                    tmp_MS3);
+                                     tmp_MS2,
+                                     tmp_MS3);
                 gPhase = tblFightPhase.end;
             }
             break;

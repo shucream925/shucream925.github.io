@@ -46,10 +46,19 @@ let gImgMap;        //画面
 let gImgPlayer;     //画像。プレイヤー
 let gImgMessage;    //メッセージ画像
 let gImgCommand;    //メッセージ画像
+let gImgMenu;    //メッセージ画像
 let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
 let gImgFight_Background;       //戦闘背景
 let MS_num;
+
+//キャラクター画像
+const gChar_MIka = 'img/MIka.png';
+let gImg_Mika;
+const gChar_Akihiro = 'img/Akihiro.png';
+let gImg_Akihiro;
+const gChar_Sino = 'img/Sino.png';
+let gImg_Sino;
 
 
 let Fight_command = [
@@ -66,12 +75,14 @@ let gPhase = 0;     //戦闘フェーズ
 let gStatus = 0;
 let gCursor = 0;        //カーソル位置
 
+let count_dadein = 0;
 
 //画像読み込み
 const gFileMap      = "img/Outside_A2.png";
 const gFilePlayer   = "img/Tekkadan.png";
 const gMessage_window = 'img/Message_window2.png';
 const gCommand_window = 'img/command_window.png';
+const gMenu_window = 'img/Menu_window.png';
 const gFight_Background = 'img/Fight_Background1.png';
 const gFight_Mind_status = 'img/Mind_status.png'
 const gFight_Enemy_status = 'img/Enemy_status.png'
@@ -138,8 +149,8 @@ function DrawMain()
     
     if(init == false){
         SetUpMS( );       //MS情報の設定
-        gPlayer     = new Player(Barbtos1, GusionRebake, null);
-        MS_num = 2;
+        gPlayer     = new Player(Barbtos1, GusionRebake, Ryuseigo2);
+        MS_num = 3;
         init = true;
     }
 
@@ -148,8 +159,8 @@ function DrawMain()
     }
     else if( gStatus == tblStatus.battle )
     {
-        if(gPhase == tblFightPhase.begin){ init_Fight() }
-            DrawFight( g );     //戦闘描写
+        // if(gPhase == tblFightPhase.begin){ init_Fight() }
+        DrawFight( g );     //戦闘描写
     }
     else if( gStatus == tblStatus.menu )
     {
@@ -253,6 +264,7 @@ function TickField()
 
         if(( Math.random() * 4 < 1 )&&(gPhase == tblFightPhase.pre)){        //ランダムエンカウント
             gPhase = tblFightPhase.begin;         //摘出現
+            init_Fight();
             gStatus = tblStatus.battle;
         }
     }
@@ -292,31 +304,37 @@ function WimTimer()
 function DrawMenu( g )
 {
     // メニューウィンドウ表示
-    g.fillStyle = 'rgba(0,0,0,0.4)';
-    g.fillRect( 10, 10, 400, 150);
+    if(count_dadein <= 1){
+        fadeout( g );
+    }else{
+        g.fillStyle = 'rgba(0,0,0,1)';
+        g.fillRect( 0, 0, WIDTH, HEIGHT);
+        g.drawImage(gImgMenu, 0, 0, 1830, 1007, 10, 10, WIDTH-20, HEIGHT-20);
 
-    g.font = "18px monospace";          //文字フォントを指定
-    g.fillStyle = FONTSTYLE;
-    
-    //項目表示
-    g.fillText( "機体名", 15, 30 + 18 * 0);
-    g.fillText( "レベル", 220, 30 + 18 * 0);
-    g.fillText( "HP", 300, 30 + 18 * 0);
+        g.font = FONT;          //文字フォントを指定
+        g.fillStyle = FONTSTYLE;
 
-    if( gPlayer.MS1 != null){
-        g.fillText( gPlayer.MS1.NAME, 15, 30 + 18 * 1);
-        g.fillText( " Lv." + gPlayer.MS1.Lv, 220, 30 + 18 * 1);
-        g.fillText( " HP:" + gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 300, 30 + 18 * 1);
-    }
-    if( gPlayer.MS2 != null){
-        g.fillText( gPlayer.MS2.NAME, 15, 30 + 18 * 2);
-        g.fillText( " Lv." + gPlayer.MS2.Lv, 220, 30 + 18 * 2);
-        g.fillText( " HP:" + gPlayer.MS2.HP + "/" + gPlayer.MS2.MAXHP, 300, 30 + 18 * 2);
-    }
-    if( gPlayer.MS3 != null){
-        g.fillText( gPlayer.MS3.NAME, 15, 30 + 18 * 3);
-        g.fillText( " Lv." + gPlayer.MS3.Lv, 220, 30 + 18 * 3);
-        g.fillText( " HP:" + gPlayer.MS3.HP + "/" + gPlayer.MS3.MAXHP, 300, 30 + 18 * 3);
+        if( gPlayer.MS1 != null){
+            gImg_Mika = new Image();    gImg_Mika.src = gChar_MIka; //戦闘自分ステータス画像
+            g.drawImage(gImg_Mika, 0, 0, 79, 80, 50, 40 + Math.floor(HEIGHT/3) * 0, 79, 80);
+            g.fillText( gPlayer.MS1.NAME, 200, 50 + Math.floor(HEIGHT/3) * 0);
+            g.fillText( " Lv." + gPlayer.MS1.Lv, 220, 80 + Math.floor(HEIGHT/3) * 0);
+            g.fillText( " HP:" + gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 220, 110 + Math.floor(HEIGHT/3) * 0);
+        }
+        if( gPlayer.MS2 != null){
+            gImg_Akihiro = new Image();    gImg_Akihiro.src = gChar_Akihiro; //戦闘自分ステータス画像
+            g.drawImage(gImg_Akihiro, 0, 0, 79, 80, 50, 40 + Math.floor(HEIGHT/3) * 1, 79, 80);
+            g.fillText( gPlayer.MS2.NAME, 200, 50 + Math.floor(HEIGHT/3) * 1);
+            g.fillText( " Lv." + gPlayer.MS2.Lv, 220, 80 + Math.floor(HEIGHT/3) * 1);
+            g.fillText( " HP:" + gPlayer.MS2.HP + "/" + gPlayer.MS2.MAXHP, 220, 110 + Math.floor(HEIGHT/3) * 1);
+        }
+        if( gPlayer.MS3 != null){
+            gImg_Sino = new Image();    gImg_Sino.src = gChar_Sino; //戦闘自分ステータス画像
+            g.drawImage(gImg_Sino, 0, 0, 79, 80, 50, 40 + Math.floor(HEIGHT/3) * 2, 79, 80);
+            g.fillText( gPlayer.MS3.NAME, 200, 50 + Math.floor(HEIGHT/3) * 2);
+            g.fillText( " Lv." + gPlayer.MS3.Lv, 220, 80 + Math.floor(HEIGHT/3) * 2);
+            g.fillText( " HP:" + gPlayer.MS3.HP + "/" + gPlayer.MS3.MAXHP, 220, 110 + Math.floor(HEIGHT/3) * 2);
+        }
     }
 }
 
@@ -327,7 +345,7 @@ window.onkeydown = function ( ev )
 
     gKey[ c ] = 1;
 
-    if( gStatus == tblStatus.map){
+    if(( gStatus == tblStatus.map)||( gStatus == tblStatus.menu )){
         gStatus = keydown_map( c, gStatus );
     }else if( gStatus == tblStatus.battle){
         battle_onkeydown( c );
@@ -337,16 +355,15 @@ window.onkeydown = function ( ev )
 
 function keydown_map( prm_c, prm_gStatus )
 {
-
+    
     if( prm_c == 77 ){
         return tblStatus.menu;
-    }
-
-    if( prm_c == 8 ){
+    }else{
+        count_dadein = 0;       //フェードインカウントのリセット
         return tblStatus.map;
     }
-
-    return prm_gStatus;
+    
+    // return prm_gStatus;
 }
 
 window.onkeyup = function( ev )
@@ -387,4 +404,13 @@ window.onload = function()
     WimSize();                                      //画面サイズ初期化
     window.addEventListener( "reize", function(){WimSize()});       //プラウザサイズ変更時にWimSize呼び出し
     setInterval( function() { WimTimer();}, INTERVAL);     //33ms間隔で、WimTimer()を呼び出す
+}
+
+function fadeout( g ){
+    g.fillStyle = 'rgba(0,0,0,1)';
+    count_dadein += 0.05
+    g.globalAlpha = count_dadein;
+
+    g.fillRect( 0, 0, WIDTH, HEIGHT);
+
 }

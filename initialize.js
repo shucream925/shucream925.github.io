@@ -47,6 +47,7 @@ const gFight_GusionRebake_MS = 'img/GusionRebake.png';
 const gFight_Ryuseigo2_MS = 'img/Ryuseigo2.png';
 
 
+
 //Class定義
 const MS = class{
     constructor(ID, NAME, HP, MAXHP, ATT, DEF, SPD, Ex, Lv, IMG, EVO){
@@ -87,6 +88,9 @@ function LoadImage()
 
     gImgCommand = new Image();
     gImgCommand.src = gCommand_window; //コマンドウィンドゥ
+    
+    gImgMenu = new Image();
+    gImgMenu.src = gMenu_window; //コマンドウィンドゥ
 
     gImgFight_Background = new Image();
     gImgFight_Background.src = gFight_Background; //戦闘背景
