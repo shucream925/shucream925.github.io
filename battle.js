@@ -14,6 +14,7 @@ let toatl_MS_num;
 let toatl_enemyMS_num;
 var Enemy_MS = [3];
 var Target_Enemy_MS = [3];
+var Tbl_Enemy_number = [3];
 let command_state;
 var break_enemy_MS;
 
@@ -152,17 +153,14 @@ function DrawFight( g )
             if(command_state == 1){
                 g.font = FONT;
                 g.fillStyle = FONTSTYLE;
-
-                    for( var i = 0; i < toatl_enemyMS_num; i++){
-        if(Enemy_MS[i] != null){
-            g.drawImage( Enemy_MS[i].IMG , 0, 0, 257, 240, 600-50*i, 220-80*i, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
-            g.fillText( i + " : " + Enemy_MS[i].HP, 600, 100+30*i);     //デバッグ用
-        }
-    }
-                g.fillText("敵１", 326,373 + 23 * 0);
-                g.fillText("敵２", 326,373 + 23 * 1);
-                g.fillText("敵３", 326,373 + 23 * 2);
-                g.fillText("⇒", 306, 373 + 23 * gCursor)    //カーソル描画
+                var command_select = 0;
+                for( var i = 0; i < toatl_enemyMS_num; i++){
+                    if(Enemy_MS[i] != null){
+                        command_select = i;
+                        g.fillText("⇒", 500, 300 - 100 * i)    //カーソル描画
+                    }
+                }
+                
             }
             break;
 
@@ -320,12 +318,12 @@ function battle_onkeydown( c ){
             if(( CHK_CLICK_ENTER(c) == true )&&(command_state == 1)){   //Enterキー判定
                 command_state = 0;   
                 if(Order_MS_num < MS_num - 1){
-                    Target_Enemy_MS[Order_MS_num] = gCursor;
+                    Target_Enemy_MS[Order_MS_num] = command_select;
                     gCursor = 0;        //カーソル位置リセット
                     Order_MS_num += 1;  //MS番号更新
                     break;
                 }else{
-                    Target_Enemy_MS[Order_MS_num] = gCursor;
+                    Target_Enemy_MS[Order_MS_num] = command_select;
                     gPhase = tblFightPhase.start;
                     gCursor = 0;
                     Order_MS_num = 0;
