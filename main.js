@@ -25,6 +25,7 @@ const   WNDSTYLE = "rgba(0, 0, 0, 0.7)";//ウィンドウの色
 
 const   gKey = new Uint8Array( 0x100 );    //キー入力バッファ
 
+var audio = new Audio('./sound/menu.mp3');
 
 let init = false;
 let gFrame = 0;
@@ -303,6 +304,9 @@ function WimTimer()
 
 function DrawMenu( g )
 {
+    if((count_dadein > 0.90)&&(count_dadein < 1.00)){
+        audio.play();
+    }
     // メニューウィンドウ表示
     if(count_dadein <= 1){
         fadeout( g );
@@ -319,6 +323,7 @@ function DrawMenu( g )
             g.drawImage(gImg_Mika, 0, 0, 79, 80, 50, 40 + Math.floor(HEIGHT/3) * 0, 79, 80);
             g.fillText( gPlayer.MS1.NAME, 200, 50 + Math.floor(HEIGHT/3) * 0);
             g.fillText( " Lv." + gPlayer.MS1.Lv, 220, 80 + Math.floor(HEIGHT/3) * 0);
+            g.fillText( " ATT:" + gPlayer.MS1.ATT + "   DFF:" + gPlayer.MS1.DEF, 400, 80 + Math.floor(HEIGHT/3) * 0);
             g.fillText( " HP:" + gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 220, 110 + Math.floor(HEIGHT/3) * 0);
         }
         if( gPlayer.MS2 != null){
@@ -326,6 +331,7 @@ function DrawMenu( g )
             g.drawImage(gImg_Akihiro, 0, 0, 79, 80, 50, 40 + Math.floor(HEIGHT/3) * 1, 79, 80);
             g.fillText( gPlayer.MS2.NAME, 200, 50 + Math.floor(HEIGHT/3) * 1);
             g.fillText( " Lv." + gPlayer.MS2.Lv, 220, 80 + Math.floor(HEIGHT/3) * 1);
+            g.fillText( " ATT:" + gPlayer.MS2.ATT + "   DFF:" + gPlayer.MS2.DEF, 400, 80 + Math.floor(HEIGHT/3) * 1);
             g.fillText( " HP:" + gPlayer.MS2.HP + "/" + gPlayer.MS2.MAXHP, 220, 110 + Math.floor(HEIGHT/3) * 1);
         }
         if( gPlayer.MS3 != null){
@@ -333,6 +339,7 @@ function DrawMenu( g )
             g.drawImage(gImg_Sino, 0, 0, 79, 80, 50, 40 + Math.floor(HEIGHT/3) * 2, 79, 80);
             g.fillText( gPlayer.MS3.NAME, 200, 50 + Math.floor(HEIGHT/3) * 2);
             g.fillText( " Lv." + gPlayer.MS3.Lv, 220, 80 + Math.floor(HEIGHT/3) * 2);
+            g.fillText( " ATT:" + gPlayer.MS3.ATT + "   DFF:" + gPlayer.MS3.DEF, 400, 80 + Math.floor(HEIGHT/3) * 2);
             g.fillText( " HP:" + gPlayer.MS3.HP + "/" + gPlayer.MS3.MAXHP, 220, 110 + Math.floor(HEIGHT/3) * 2);
         }
     }
