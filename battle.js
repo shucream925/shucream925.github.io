@@ -82,12 +82,12 @@ function DrawFight( g )
         /**** 敵軍機体画像描写 ****/
     for( var i = 0; i < toatl_enemyMS_num; i++){
         if(Enemy_MS_list[i] != null){
-            g.drawImage( Enemy_MS_list[i].IMG , 0, 0, 257, 240, 500+50*i, 60+80*i, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
+            g.drawImage( Enemy_MS_list[i].IMG , 0, 0, 257, 240, 
+                        500+50*i, 60+80*i, 
+                        Math.floor( Enemy_MS_list[i].IMG.naturalWidth * MS_HEIGHT / Enemy_MS_list[i].IMG.naturalHeight ), MS_HEIGHT);     //敵画像描写
             g.fillText( i + " : " + Enemy_MS_list[i].HP, 600, 30+30*i);     //デバッグ用
         }
     }
-    g.fillText( "gCursor : " + gCursor, 600, 120);     //デバッグ用
-
 
     g.fillStyle = FONTSTYLE;
     
@@ -146,19 +146,19 @@ function DrawFight( g )
 
     switch( gPhase ){
         case tblFightPhase.command:
-            //コマンドウィンドゥ表示
-            g.drawImage(gImgCommand, 0, 0, 435, 249, 300, 348, 175, 100);
-            tblMessageposition[0] += 300; 
-
             //カーソルと選択肢の表示
             if(command_state == 0){
+                //コマンドウィンドゥ表示
+                g.drawImage(gImgCommand, 0, 0, 435, 249, 300, 348, 175, 100);
+                tblMessageposition[0] += 300; 
                 g.font = FONT;
                 g.fillStyle = FONTSTYLE;
                 g.fillText("こうげき ", 326,373 + 23 * 0);
                 g.fillText("とくぎ", 326,373 + 23 * 1);
                 g.fillText("ぼうぎょ", 326,373 + 23 * 2);
                 g.fillText("アイテム", 326,373 + 23 * 3);
-                g.fillText("⇒", 306, 373 + 23 * gCursor)    //カーソル描画
+                g.fillStyle = "#ffea00";
+                g.fillText("▶", 306, 373 + 23 * gCursor)    //カーソル描画
             }
             if(command_state == 1){
                 g.font = FONT;
@@ -169,17 +169,23 @@ function DrawFight( g )
                         command_select = i;
                     }
                 }
-                g.fillText("⇒", 500, 100 + 100 * gCursor)    //カーソル描画
+                g.font = "48px monospace ";
+                g.fillStyle = "#ffea00";
+                g.fillText("▶", 500, 150 + 100 * gCursor)    //カーソル描画
             }
             break;
 
         case tblFightPhase.start:
             if((Battle_order_count <= toatl_MS_num )&&(MS_name != null)){
-                g.fillStyle = "#000000";
-                g.fillRect( 30, 30, WIDTH-60, 25);
+                g.fillStyle = "#000000";  
+                g.globalAlpha = 0.7;          
+                g.fillRect( 30, 30, WIDTH-60, 30);  //枠描写
+                
+
                 g.font = "18px monospace";;          //文字フォントを指定
                 g.fillStyle = "#FFFFFF";
-                g.fillText(MS_name + "は"+Enemy_target_MS + "に" + MS_damage +"のダメージを与えた", 30, 50);
+                g.globalAlpha = 1.0;
+                g.fillText(MS_name + "は"+Enemy_target_MS + "に" + MS_damage +"のダメージを与えた", 35, 50);
                 break;
             }
             break;
@@ -294,7 +300,6 @@ function init_Fight(){
         Enemy_MS_list[i] = new MS(Greize.ID,Greize.NAME,Greize.HP,Greize.MAXHP,Greize.ATT,Greize.DEF,Greize.SPD,0,5,Greize.IMG,null);
         
         Battle_order.push([1, Enemy_MS_list[i]]);
-        //Battle_order.push([1, Greize]);
         toatl_enemyMS_num++;
         toatl_MS_num++;
     }
@@ -393,7 +398,7 @@ function battle_onkeydown( c ){
                         Enemy_target.HP -= damage_val( Enemy_target, Own_army_MS);
                         MS_name = Own_army_MS.NAME;
                         MS_damage = damage_val( Enemy_target, Own_army_MS);
-
+                        Enemy_target_MS = Enemy_target.NAME;
                     }
                     Order_MS_num++;
                     Battle_order_count++;
