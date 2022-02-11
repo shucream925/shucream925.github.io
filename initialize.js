@@ -77,6 +77,9 @@ var arrayBarbatos = new Array(
 ***************************************************/
 function LoadImage()
 {
+    gImg_OP     = new Image();
+    gImg_OP.src = gOP;     //マップ画像読み込み
+
     gImgMap     = new Image();
     gImgMap.src = gFileMap;     //マップ画像読み込み
     

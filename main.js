@@ -25,7 +25,8 @@ const   WNDSTYLE = "rgba(0, 0, 0, 0.7)";//ウィンドウの色
 
 const   gKey = new Uint8Array( 0x100 );    //キー入力バッファ
 
-var audio = new Audio('./sound/menu.mp3');
+var audio_menu = new Audio('./sound/menu.mp3');
+var audio_op = new Audio('./sound/Iron-Blooded-Orphans.mp3');
 
 let init = false;
 let gFrame = 0;
@@ -52,6 +53,8 @@ let gPlayerX = START_X * TILESIZE + TILESIZE /2 ;   //プレイヤーX座標
 let gPlayerY = START_Y * TILESIZE + TILESIZE /2 ;   //プレイヤーY座標
 let gImgFight_Background;       //戦闘背景
 let MS_num;
+let fadeout_count = 1.0;
+let count_fadein = 0;
 
 //キャラクター画像
 const gChar_MIka = 'img/MIka.png';
@@ -60,6 +63,8 @@ const gChar_Akihiro = 'img/Akihiro.png';
 let gImg_Akihiro;
 const gChar_Sino = 'img/Sino.png';
 let gImg_Sino;
+const gOP = 'img/op.jpg';
+let gImg_OP;
 
 
 let Fight_command = [
@@ -75,8 +80,6 @@ let gPlayer;
 let gPhase = 0;     //戦闘フェーズ
 let gStatus = 0;
 let gCursor = 0;        //カーソル位置
-
-let count_dadein = 0;
 
 //画像読み込み
 const gFileMap      = "img/Outside_A2.png";
@@ -100,9 +103,10 @@ const Player = class{
 
 // メインステータス
 var tblStatus = {
-    map : 0,
-    battle : 1,
-    menu : 2
+    op : 0,
+    map : 1,
+    battle : 2,
+    menu : 3
 };
 
 
@@ -155,12 +159,17 @@ function DrawMain()
         init = true;
     }
 
-    if( gStatus == tblStatus.map){
+    if( gStatus == tblStatus.op){
+        gStatus = tblStatus.map          //OP飛ばし
+        DrawOp( g );       //OP描写
+    }
+    else if( gStatus == tblStatus.map){
         DrawMap( g );       //マップ描写
     }
     else if( gStatus == tblStatus.battle )
     {
-        // if(gPhase == tblFightPhase.begin){ init_Fight() }
+        // audio_op.play();
+        // audio_op.volume = 0.2;
         DrawFight( g );     //戦闘描写
     }
     else if( gStatus == tblStatus.menu )
@@ -169,6 +178,18 @@ function DrawMain()
         DrawMenu( g );
     }
 
+}
+
+function DrawOp( g ){
+    
+    g.drawImage( gImg_OP ,0,0, 1280, 956, 0, 0, WIDTH, HEIGHT);
+    
+    if( fadeout_count > 0){
+        ani_imagefadein( g );
+    }else{
+        // audio_op.play();
+    }
+    g.globalAlpha = 1.0;
 }
 
 //マップ描画
@@ -304,11 +325,11 @@ function WimTimer()
 
 function DrawMenu( g )
 {
-    if((count_dadein > 0.90)&&(count_dadein < 1.00)){
-        audio.play();
+    if((count_fadein > 0.20)&&(count_fadein < 0.40)){
+        audio_menu.play();
     }
     // メニューウィンドウ表示
-    if(count_dadein <= 1){
+    if(count_fadein <= 1){
         fadeout( g );
     }else{
         g.fillStyle = 'rgba(0,0,0,1)';
@@ -352,6 +373,12 @@ window.onkeydown = function ( ev )
 
     gKey[ c ] = 1;
 
+    if(( gStatus == tblStatus.op)&&(CHK_CLICK_ENTER(c) == true)){
+        // g.globalAlpha = 1.0;
+        gStatus = tblStatus.map
+        fadein_count = 0;
+    }
+
     if(( gStatus == tblStatus.map)||( gStatus == tblStatus.menu )){
         gStatus = keydown_map( c, gStatus );
     }else if( gStatus == tblStatus.battle){
@@ -366,7 +393,7 @@ function keydown_map( prm_c, prm_gStatus )
     if( prm_c == 77 ){
         return tblStatus.menu;
     }else{
-        count_dadein = 0;       //フェードインカウントのリセット
+        count_fadein = 0;       //フェードインカウントのリセット
         return tblStatus.map;
     }
     
@@ -415,9 +442,17 @@ window.onload = function()
 
 function fadeout( g ){
     g.fillStyle = 'rgba(0,0,0,1)';
-    count_dadein += 0.05
-    g.globalAlpha = count_dadein;
+    count_fadein += 0.1
+    g.globalAlpha = count_fadein;
 
     g.fillRect( 0, 0, WIDTH, HEIGHT);
 
+}
+
+function ani_imagefadein( g ){
+    g.fillStyle = 'rgba(0,0,0,1)';
+    fadeout_count -= 0.01
+    g.globalAlpha = fadeout_count;
+
+    g.fillRect( 0, 0, WIDTH, HEIGHT);
 }

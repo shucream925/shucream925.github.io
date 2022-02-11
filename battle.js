@@ -185,7 +185,14 @@ function DrawFight( g )
                 g.font = "18px monospace";;          //文字フォントを指定
                 g.fillStyle = "#FFFFFF";
                 g.globalAlpha = 1.0;
-                g.fillText(MS_name + "は"+Enemy_target_MS + "に" + MS_damage +"のダメージを与えた", 35, 50);
+                g.fillText(MS_name + "は"+ Enemy_target_MS + "に" + MS_damage +"のダメージを与えた", 35, 50);
+
+                // //ダメージ描写
+                // g.font = "32px monospace";;          //文字フォントを指定
+                // g.fillStyle = "yellow";
+                // g.strokeStyle = 'black';
+                // g.fillText(MS_damage,500+50*gCursor, 60+80*gCursor);
+
                 break;
             }
             break;
