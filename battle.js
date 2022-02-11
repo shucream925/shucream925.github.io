@@ -1,6 +1,9 @@
 "use strict";
 
-const MS_HEIGHT = 150;
+/*************************************************** 
+概要 : 変数定義
+***************************************************/
+const MS_HEIGHT = 150;              //描写するMSの高さ
 
 let Battle_order;
 let Battle_order_count;
@@ -12,12 +15,16 @@ let MS_damage;
 let Enemy_target_MS;
 let toatl_MS_num;
 let toatl_enemyMS_num;
-var Enemy_MS = [3];
-var Target_Enemy_MS = [3];
+var Enemy_MS_list = [3];            // 敵MSリスト
+var Target_Enemy_MS = [3];          // 
 var Tbl_Enemy_number = [3];
 let command_state;
 var break_enemy_MS;
+var command_select = 0;
 
+/*************************************************** 
+概要 : テーブル定義
+***************************************************/
 // 戦闘フェイズテーブル
 var tblFightPhase = {
     pre : 0,
@@ -38,7 +45,11 @@ var tblFight_command = {
     Item : 3
 };
 
-//戦闘描写
+/*************************************************** 
+概要 : 戦闘描写
+引数 :  
+戻値 : 
+***************************************************/
 function DrawFight( g )
 {
     let tblMessageposition = [10, 348 + FONT_MARGE_SIZE];
@@ -70,11 +81,13 @@ function DrawFight( g )
 
         /**** 敵軍機体画像描写 ****/
     for( var i = 0; i < toatl_enemyMS_num; i++){
-        if(Enemy_MS[i] != null){
-            g.drawImage( Enemy_MS[i].IMG , 0, 0, 257, 240, 600-50*i, 220-80*i, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
-            g.fillText( i + " : " + Enemy_MS[i].HP, 600, 100+30*i);     //デバッグ用
+        if(Enemy_MS_list[i] != null){
+            g.drawImage( Enemy_MS_list[i].IMG , 0, 0, 257, 240, 500+50*i, 60+80*i, Math.floor(257 * 0.8), Math.floor(240 * 0.8));     //敵画像描写
+            g.fillText( i + " : " + Enemy_MS_list[i].HP, 600, 30+30*i);     //デバッグ用
         }
     }
+    g.fillText( "gCursor : " + gCursor, 600, 120);     //デバッグ用
+
 
     g.fillStyle = FONTSTYLE;
     
@@ -131,9 +144,6 @@ function DrawFight( g )
         g.fillText( toatl_enemyMS_num, 400, 150);                      //HP
     }
 
-
-    //DrawMessage( g );               //メッセージ描画
-
     switch( gPhase ){
         case tblFightPhase.command:
             //コマンドウィンドゥ表示
@@ -153,14 +163,13 @@ function DrawFight( g )
             if(command_state == 1){
                 g.font = FONT;
                 g.fillStyle = FONTSTYLE;
-                var command_select = 0;
+
                 for( var i = 0; i < toatl_enemyMS_num; i++){
-                    if(Enemy_MS[i] != null){
+                    if(Enemy_MS_list[i] != null){
                         command_select = i;
-                        g.fillText("⇒", 500, 300 - 100 * i)    //カーソル描画
                     }
                 }
-                
+                g.fillText("⇒", 500, 100 + 100 * gCursor)    //カーソル描画
             }
             break;
 
@@ -282,9 +291,9 @@ function init_Fight(){
     //敵機ランダム出現
     for( var i=0; i < random_number; i++){
         // ID, NAME, HP, MAXHP, ATT, DEF, SPD, Ex, Lv, IMG, EVO
-        Enemy_MS[i] = new MS(Greize.ID,Greize.NAME,Greize.HP,Greize.MAXHP,Greize.ATT,Greize.DEF,Greize.SPD,0,5,Greize.IMG,null);
+        Enemy_MS_list[i] = new MS(Greize.ID,Greize.NAME,Greize.HP,Greize.MAXHP,Greize.ATT,Greize.DEF,Greize.SPD,0,5,Greize.IMG,null);
         
-        Battle_order.push([1, Enemy_MS[i]]);
+        Battle_order.push([1, Enemy_MS_list[i]]);
         //Battle_order.push([1, Greize]);
         toatl_enemyMS_num++;
         toatl_MS_num++;
@@ -310,7 +319,7 @@ function battle_onkeydown( c ){
             if(( CHK_CLICK_ENTER(c) == true )&&(command_state == 0)){
                 Fight_command[ Order_MS_num ][ 1 ] = gCursor+1;
                 command_state = 1;
-                gCursor = 0;
+                gCursor = Battle_chk_existEnemy_topnumber( Enemy_MS_list );
                 break;
             }
             
@@ -318,12 +327,12 @@ function battle_onkeydown( c ){
             if(( CHK_CLICK_ENTER(c) == true )&&(command_state == 1)){   //Enterキー判定
                 command_state = 0;   
                 if(Order_MS_num < MS_num - 1){
-                    Target_Enemy_MS[Order_MS_num] = command_select;
+                    Target_Enemy_MS[Order_MS_num] = gCursor;
                     gCursor = 0;        //カーソル位置リセット
                     Order_MS_num += 1;  //MS番号更新
                     break;
                 }else{
-                    Target_Enemy_MS[Order_MS_num] = command_select;
+                    Target_Enemy_MS[Order_MS_num] = gCursor;
                     gPhase = tblFightPhase.start;
                     gCursor = 0;
                     Order_MS_num = 0;
@@ -336,20 +345,20 @@ function battle_onkeydown( c ){
         case tblFightPhase.start:
             if( CHK_CLICK_ENTER(c) == true ){
                 /**** 戦闘終了 処理確認****/
-                if((Enemy_MS[0] != null)&&( Enemy_MS[0].HP <= 0 )){
-                    Enemy_MS[0] = null;
+                if((Enemy_MS_list[0] != null)&&( Enemy_MS_list[0].HP <= 0 )){
+                    Enemy_MS_list[0] = null;
                     break_enemy_MS++;
                     toatl_MS_num--;
                     break;   
                 }
-                if((Enemy_MS[1] != null)&&( Enemy_MS[1].HP <= 0 )){
-                    Enemy_MS[1] = null;
+                if((Enemy_MS_list[1] != null)&&( Enemy_MS_list[1].HP <= 0 )){
+                    Enemy_MS_list[1] = null;
                     break_enemy_MS++;
                     toatl_MS_num--;
                     break;   
                 }
-                if((Enemy_MS[2] != null)&&( Enemy_MS[2].HP <= 0 )){
-                    Enemy_MS[2] = null;
+                if((Enemy_MS_list[2] != null)&&( Enemy_MS_list[2].HP <= 0 )){
+                    Enemy_MS_list[2] = null;
                     break_enemy_MS++;
                     toatl_MS_num--;
                     break;   
@@ -376,7 +385,7 @@ function battle_onkeydown( c ){
                     // Enemy_target = Battle_order[toatl_MS_num-1][1]; 
                     //             敵MSリスト[ 選んだ敵MS [  ] ]
                     // Battle_order[Battle_order_count][0]
-                    Enemy_target = Enemy_MS[Target_Enemy_MS[ Battle_order_count ]];     //攻撃対象の決定
+                    Enemy_target = Enemy_MS_list[Target_Enemy_MS[ Battle_order_count ]];     //攻撃対象の決定
                     Own_army_MS = Battle_order[Battle_order_count][1];                  //自機の取得
 
                     //ダメージ計算
@@ -462,19 +471,39 @@ function CHK_CLICK_ENTER(c){
 
 function Command_select(c){
 
-    if(( c == 38 )&&( gCursor > 0 )){
-        gCursor = gCursor - 1 ;
-        
-    }else if(( c == 38 )&&( gCursor <= 0 )){
-        gCursor = 3 ;
-        
-    }else if( c == 40 ){
-        gCursor = (gCursor + 1 ) %  4;
-        
+    if( command_state == 0){
+        if(( c == 38 )&&( gCursor > 0 )){       //通常の上移動
+            gCursor = gCursor - 1 ;
+            
+        }else if(( c == 38 )&&( gCursor <= 0 )){    //コマンド以上は変わらない
+            gCursor = 3 ;
+            
+        }else if( c == 40 ){        //下には移動できる
+            gCursor = (gCursor + 1 ) %  4;
+        }
+    }else if( command_state == 1){
+        if(( c == 38 )&&( Enemy_MS_list[ gCursor - 1 ] != null )){       //通常の上移動
+            gCursor = gCursor - 1 ;
+        }else if(( c == 38 )&&( gCursor <= 0 )){        //コマンド以上は変わらない
+            gCursor = Battle_chk_existEnemy_topnumber( Enemy_MS_list ) ;
+            
+        }else if(( c == 40 )&&( Enemy_MS_list[ gCursor + 1 ] != null )){                //下には移動できる
+            gCursor = gCursor + 1;
+        }
     }
-
-
-
-
 }
 
+/*************************************************** 
+概要 : 存在している敵機の中で一番小さい数を渡す
+引数 :  
+戻値 : 0,1,2のどれか
+***************************************************/
+function Battle_chk_existEnemy_topnumber( Enemy_MS_list ){
+
+    for( var i = 0; i < toatl_enemyMS_num;i++  ){
+        if(Enemy_MS_list[i] != null){
+            return i;
+        }
+    }
+
+}
