@@ -216,7 +216,7 @@ function DrawFight( g )
 ***************************************************/
 function AddExp( prm_MS, prm_val )
 {
-    prm_MS.Ex += prm_val;             //経験値加算
+    prm_MS.Ex += prm_val * toatl_enemyMS_num;             //経験値加算
     LvUP( prm_MS );
 }
 
@@ -228,6 +228,7 @@ function AddExp( prm_MS, prm_val )
 function LvUP( prm_MS ){
 
     while( prm_MS.Lv < prm_MS.Ex ){
+        prm_MS.Ex = 0;
         prm_MS.Lv++;              //レベルアップ
         let HPpercent = prm_MS.HP / prm_MS.MAXHP;
         prm_MS.MAXHP += 4;        //HP加算
@@ -305,7 +306,6 @@ function init_Fight(){
     for( var i=0; i < random_number; i++){
         // ID, NAME, HP, MAXHP, ATT, DEF, SPD, Ex, Lv, IMG, EVO
         Enemy_MS_list[i] = new MS(Greize.ID,Greize.NAME,Greize.HP,Greize.MAXHP,Greize.ATT,Greize.DEF,Greize.SPD,0,5,Greize.IMG,null);
-        
         Battle_order.push([1, Enemy_MS_list[i]]);
         toatl_enemyMS_num++;
         toatl_MS_num++;

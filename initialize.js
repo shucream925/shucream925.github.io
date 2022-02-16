@@ -41,8 +41,6 @@ const gFight_Barbatos4_MS = 'img/Barbtos4.png';
 const gFight_Barbatos5space_MS = 'img/Barbtos5space.png';
 const gFight_Barbatos5ground_MS = 'img/Barbtos5ground.png';
 const gFight_Barbatos6_MS = 'img/Barbtos6.png';
-const gFight_BarbatosRups_MS = 'img/BarbtosRups.png';
-const gFight_BarbatosRupsRecs_MS = 'img/BarbtosRupsRecs.png';
 const gFight_GusionRebake_MS = 'img/GusionRebake.png';
 const gFight_Ryuseigo2_MS = 'img/Ryuseigo2.png';
 
@@ -129,12 +127,6 @@ function LoadImage()
     gImgFight_Barbatos6_MS = new Image();
     gImgFight_Barbatos6_MS.src = gFight_Barbatos6_MS; //バルバトス6
 
-    gImgFight_BarbatosRups_MS = new Image();
-    gImgFight_BarbatosRups_MS.src = gFight_BarbatosRups_MS; //バルバトスルプス
-
-    gImgFight_BarbatosRupsRecs_MS = new Image();
-    gImgFight_BarbatosRupsRecs_MS.src = gFight_BarbatosRupsRecs_MS; //バルバトスルプスレクス
-
     gImgFight_GusionRebake_MS = new Image();
     gImgFight_GusionRebake_MS.src = gFight_GusionRebake_MS; //グシオンリベイク
 
@@ -148,9 +140,8 @@ function LoadImage()
 戻値 : 無し
 ***************************************************/
 function SetUpMS( ){
-    BarbtosRupsRecs = new MS(1, "バルバトスルプスレクス", gHP, gMAXHP, 70, 50, 65, gEx, gLv, gImgFight_BarbatosRupsRecs_MS, null);
-    BarbtosRups     = new MS(1, "バルバトスルプス", gHP, gMAXHP, 60, 40, 55, gEx, gLv, gImgFight_BarbatosRups_MS, BarbtosRupsRecs);
-    Barbtos6        = new MS(1, "バルバトス第六形態", gHP, gMAXHP, 52, 45, 45, gEx, gLv, gImgFight_Barbatos6_MS, BarbtosRups);
+
+    Barbtos6        = new MS(1, "バルバトス第六形態", gHP, gMAXHP, 52, 45, 45, gEx, gLv, gImgFight_Barbatos6_MS, null);
     Barbtos5ground  = new MS(1, "バルバトス第五地上形態", gHP, gMAXHP, 48, 36, 45, gEx, gLv, gImgFight_Barbatos5ground_MS, Barbtos6);
     Barbtos5space   = new MS(1, "バルバトス第五宇宙形態", gHP, gMAXHP, 48, 45, 45, gEx, gLv, gImgFight_Barbatos5space_MS, Barbtos5ground);
     Barbtos4        = new MS(1, "バルバトス第四形態", gHP, gMAXHP, 48, 36, 45, gEx, gLv, gImgFight_Barbatos4_MS, Barbtos5space);
