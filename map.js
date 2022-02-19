@@ -1,8 +1,14 @@
 "use strict";
 
+let gMap_state;
+
+const Map_list = {
+    town : 0,
+    load : 1
+}
+
 let gImgMap1_ground;
 let gImgMap1_object;
-
 
 const gFileMap1_ground      = "map/Map1.png";
 const gFileMap1_object      = "map/Map1_object.png";
@@ -95,18 +101,11 @@ const gMap1_object = [
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 ]
 
-// const gMap1_layor3 = [
-
-
-// ]
-
 //マップ描画
 function DrawMap( g ){
 
-
     let		mx = Math.floor( gPlayerX / TILESIZE );
 	let		my = Math.floor( gPlayerY / TILESIZE );
-
 
     for( let dy = -SCR_HEIGHT; dy <= SCR_HEIGHT; dy++){
         let ty = my + dy;           //タイル座標Y
@@ -127,10 +126,6 @@ function DrawMap( g ){
                     ty * TILESIZE + HEIGHT / 2 - gPlayerY,
                     gMap1_object[ py * MAP_WIDTH + px], gImgMap1_object);
             }
-            // DrawTile(g,
-            //         tx * TILESIZE + WIDTH / 2 - gPlayerX,
-            //         ty * TILESIZE + HEIGHT / 2 - gPlayerY,
-            //         gMap1_layor3[ py * MAP_WIDTH + px], gImgMaptree);
         }
     }
 
@@ -171,5 +166,17 @@ function map_set1( ){
     TILEROW = 10;                   //タイル行数
 
     gMap_object = gImgMap1_object;
+
 }
 
+function map_set0( ){
+
+    gImgMap0_ground     = new Image();     gImgMap0_ground.src = gFileMap1_ground;     //マップ画像読み込み
+    gImgMap0_object     = new Image();     gImgMap0_object.src = gFileMap1_object;     //マップ画像読み込み
+    
+    TILECOLUMN = 10;                //タイル桁数
+    TILEROW = 10;                   //タイル行数
+
+    gMap_object = gImgMap0_object;
+    
+}

@@ -15,7 +15,7 @@ const   SCR_SPEED = 8;                  //スクロール速度
 const   SMOOTH = 0;                     //補間処理
 const   START_HP = 20;                  //初期HP           
 const	START_X = 12;			        //スタート位置X	
-const	START_Y	= 20;	                //スタート位置Y
+const	START_Y	= 1;	                //スタート位置Y
 const   TILESIZE = 32;                  //タイルサイズ(ドット)
 const   WNDSTYLE = "rgba(0, 0, 0, 0.7)";//ウィンドウの色
 
@@ -92,8 +92,6 @@ const gFight_Background = 'img/Fight_Background1.png';
 const gFight_Mind_status = 'img/Mind_status.png'
 const gFight_Enemy_status = 'img/Enemy_status.png'
 
-
-
 const Player = class{
     constructor( MS1, MS2, MS3, MS4 ){
     this.MS1 = MS1;       //搭乗MS1
@@ -110,45 +108,9 @@ var tblStatus = {
     menu : 3
 };
 
-
-
 //マップ定義
 let gMap;
 let gMap_object;
-//  = [
-// 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-// 0,18,19,0,20,21,0,0,0,0,0,22,23,0,0,0,0,0,0,0,0,0,0,0,0,0,
-// 0,34,35,0,36,37,0,0,0,0,0,38,39,0,0,0,0,0,0,0,48,48,48,48,0,0,
-// 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,0,0,48,48,48,48,0,0,
-// 0,48,48,48,48,0,4,4,4,0,0,0,0,0,0,5,5,5,0,0,48,48,48,48,0,0,
-// 0,48,48,48,48,0,4,4,4,0,0,4,4,4,0,0,0,0,0,0,48,48,48,48,0,0,
-// 0,48,48,48,48,0,4,4,4,0,0,4,4,4,0,0,0,0,0,0,48,48,48,48,0,0,
-// 0,48,48,48,48,0,4,4,4,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,
-// 0,48,48,48,48,0,4,4,4,0,0,48,48,48,48,0,0,0,0,0,0,0,0,0,0,0,
-// 0,0,0,0,0,0,4,4,4,0,0,48,48,48,48,0,0,4,4,4,0,0,0,0,0,0,
-// 0,20,21,0,0,0,4,4,4,0,0,48,48,48,48,0,0,4,4,4,0,0,0,0,0,0,
-// 0,36,37,0,0,0,4,4,4,0,0,48,48,48,48,0,0,4,4,4,0,0,0,0,0,0,
-// 0,0,0,0,0,0,0,0,0,0,0,48,48,48,48,0,0,0,0,0,0,0,0,0,0,0,
-// 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-// 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-// 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,0,0,
-// 0,22,23,0,0,0,0,0,0,0,0,0,0,0,0,19,0,20,21,0,0,5,5,5,0,0,
-// 0,38,39,0,0,0,0,0,0,0,48,48,48,48,0,35,0,36,37,0,0,5,5,5,0,0,
-// 0,0,0,0,0,5,5,5,0,0,48,48,48,48,0,0,0,0,0,0,0,0,0,0,0,0,
-// 0,0,0,0,0,5,5,5,0,0,48,48,48,48,0,48,48,48,0,0,0,0,0,0,0,0,
-// 0,4,4,4,0,0,0,0,0,0,48,48,48,48,0,48,48,48,0,0,0,0,0,5,5,0,
-// 0,4,4,4,0,0,0,0,0,0,48,48,48,48,0,48,48,48,0,0,0,0,0,5,5,0,
-// 0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,48,48,48,0,0,0,0,0,5,5,0,
-// 0,48,48,48,48,0,0,0,0,0,0,0,0,0,0,48,48,48,0,0,0,0,0,5,5,0,
-// 0,48,48,48,48,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,
-// 0,48,48,48,48,0,0,4,4,4,0,0,0,0,0,21,0,0,0,0,0,0,0,5,5,0,
-// 0,48,48,48,48,0,0,4,4,4,0,0,0,0,0,37,0,0,0,0,0,0,0,5,5,0,
-// 0,48,48,48,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,
-// 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-// 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-// ];
-
-
 
 //Main描写
 function DrawMain()
@@ -157,9 +119,10 @@ function DrawMain()
     
     if(init == false){
         SetUpMS( );       //MS情報の設定
-        gPlayer     = new Player(Barbtos1, GusionRebake, Ryuseigo2);
+        gPlayer     = new Player(Barbtos1, null, null);
         map_set1();
-        MS_num = 3;
+        gMap_state = Map_list.load;
+        MS_num = 1;
         init = true;
     }
 
@@ -243,26 +206,15 @@ function TickField()
 
     if( Math.abs( gMoveX ) + Math.abs( gMoveY ) >= SCR_SPEED )	//	マス目移動が終わる直前
     {
-        if( m == 75 ){
-            gPlayer.MS1.HP = gPlayer.MS1.MAXHP;
-            if( gPlayer.MS2 != null){
-                gPlayer.MS2.HP = gPlayer.MS2.MAXHP;
-            }
-            if( gPlayer.MS3 != null){
-                gPlayer.MS3.HP = gPlayer.MS3.MAXHP;
-            }
-            // SetMessage("HPが全回復した",null)
-        }
+        
+        switch( gMap_state ){
+            case Map_list.town:
+                TickField_town( m );
+                break;
 
-        if( m != 0 ){
-            gMoveX = 0;     //移動禁止
-            gMoveY = 0;     //移動禁止
-        }
-
-        if(( Math.random() * 10 < 1 )&&(gPhase == tblFightPhase.pre)){        //ランダムエンカウント
-            gPhase = tblFightPhase.begin;         //摘出現
-            init_Fight();
-            gStatus = tblStatus.battle;
+            case Map_list.load:
+                TickField_load( m );
+                break;
         }
     }
 
@@ -301,7 +253,7 @@ function WimTimer()
 function DrawMenu( g )
 {
     if((count_fadein > 0.20)&&(count_fadein < 0.40)){
-        audio_menu.play();
+        //audio_menu.play();
     }
     // メニューウィンドウ表示
     if(count_fadein <= 1){
@@ -319,7 +271,7 @@ function DrawMenu( g )
             g.drawImage(gImg_Mika, 0, 0, 79, 80, 50, 40 + Math.floor(HEIGHT/3) * 0, 79, 80);
             g.fillText( gPlayer.MS1.NAME, 200, 50 + Math.floor(HEIGHT/3) * 0);
             g.fillText( " Lv." + gPlayer.MS1.Lv, 220, 80 + Math.floor(HEIGHT/3) * 0);
-            g.fillText( " ATT:" + gPlayer.MS1.ATT + "   DFF:" + gPlayer.MS1.DEF, 400, 80 + Math.floor(HEIGHT/3) * 0);
+            g.fillText( " ATT:" + gPlayer.MS1.ATT + "   DFF:" + gPlayer.MS1.DEF + "   SPD:" + gPlayer.MS1.SPD, 400, 80 + Math.floor(HEIGHT/3) * 0);
             g.fillText( " HP:" + gPlayer.MS1.HP + "/" + gPlayer.MS1.MAXHP, 220, 110 + Math.floor(HEIGHT/3) * 0);
         }
         if( gPlayer.MS2 != null){

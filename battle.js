@@ -85,7 +85,7 @@ function DrawFight( g )
             g.drawImage( Enemy_MS_list[i].IMG , 0, 0, 257, 240, 
                         500+50*i, 60+80*i, 
                         Math.floor( Enemy_MS_list[i].IMG.naturalWidth * MS_HEIGHT / Enemy_MS_list[i].IMG.naturalHeight ), MS_HEIGHT);     //敵画像描写
-            g.fillText( i + " : " + Enemy_MS_list[i].HP, 600, 30+30*i);     //デバッグ用
+            // g.fillText( i + " : " + Enemy_MS_list[i].HP, 600, 30+30*i);     //デバッグ用
         }
     }
 
@@ -139,9 +139,7 @@ function DrawFight( g )
             g.fillStyle = "#000000";    g.fillRect( 575, 382+ FONT_MARGE_SIZE*2, 100, 4);
             g.fillStyle = HP_BAR_STYLE;    g.fillRect( 575, 382 + FONT_MARGE_SIZE*2, 100 * (gPlayer.MS3.HP / gPlayer.MS3.MAXHP), 4);      //HPバー
         }
-        // g.fillText( Greize.HP + "/" + Greize.MAXHP, 400, 100);                      //HP
-        // g.fillText( Battle_order_count, 400, 125);                      //HP
-        g.fillText( toatl_enemyMS_num, 400, 150);                      //HP
+
     }
 
     switch( gPhase ){
@@ -261,8 +259,8 @@ function damage_val( prm_defence_MS, prm_Attack_MS ){
     
     let damage;
 
-    damage = Math.floor((prm_Attack_MS.ATT * 2) * ( prm_Attack_MS.Lv / 100)
-             - prm_defence_MS.DEF / 4 * ( prm_defence_MS.Lv / 100));
+    damage = Math.floor((prm_Attack_MS.ATT)
+             - prm_defence_MS.DEF / 2);
     
     return damage; 
 }
@@ -271,7 +269,8 @@ function init_Fight(){
     let random_number = 1 + Math.floor((Math.random()*3) % 3);
 
     //敵機設定
-    Greize = new MS(11, "グレイズ", 10, 10, 20, 20, 20, 0, 5, gImgFight_Greize_MS, null);
+    Greize = new MS(13, "グレイズ", null, null, null, null, null, 0,3, gImgFight_Greize_MS, null);
+    Set_Prm(Greize);
     
     /**** 初期化 ****/
     command_state = 0;
@@ -282,13 +281,6 @@ function init_Fight(){
     Fight_command = [[0,0],[0,0],[0,0],[0,0]];
 
     Order_MS_num = 0;
-    // Battle_order = [[11,Greize],
-    //             [0, gPlayer.MS1],
-    //             [0, gPlayer.MS2],
-    //             [0, gPlayer.MS3],
-    //             [null, null],
-    //             [null, null]  //戦闘の順番
-    // ];
 
     Battle_order = [[0, gPlayer.MS1]];
     toatl_MS_num = 1;

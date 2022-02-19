@@ -13,8 +13,6 @@ let GusionRebake;
 let Ryuseigo2;
 let Greize;
 
-
-
 // 画像変数定義
 let gImgFight_Greize_MS;
 let gImgFight_Barbatos1_MS;
@@ -64,8 +62,26 @@ const MS = class{
 }
 
 //技定義
-var arrayBarbatos = new Array(
-    ["メイス", 30], ["滑空砲",40], ["太刀", 50],
+var Abilty_list = new Array(
+    //[ID, HP, ATT, DEF, SPD]
+    [0,  65, 60, 50, 55],    //バルバトス1st
+    [1,  65, 60, 55, 55],    //バルバトス2st
+    [2,  65, 65, 55, 55],    //バルバトス3st
+    [3,  75, 75, 70, 70],    //バルバトス4st
+    [4,  75, 85, 80, 70],    //バルバトス5st space
+    [5,  75, 85, 80, 70],    //バルバトス5st ground
+    [6,  80, 90, 85, 70],    //バルバトス6st
+    [7,  45, 35, 35, 40],    //グレイズ改
+    [8,  70, 80, 75, 70],    //グシオンリベイク
+    [9,  50, 45, 55, 50],    //流星号
+
+    [10, 90, 80, 85, 45],    //グシオン
+    [11, 85, 80, 70, 90],    //キマリス
+    [12, 85, 80, 75, 85],    //キマリストルーパー
+
+    [13, 40, 20, 20, 20],    //グレイズ
+
+
 );
 
 /*************************************************** 
@@ -136,20 +152,50 @@ function LoadImage()
 
 /*************************************************** 
 概要 : MS情報呼出し
-引数 : g
+引数 : 
 戻値 : 無し
 ***************************************************/
 function SetUpMS( ){
 
-    Barbtos6        = new MS(1, "バルバトス第六形態", gHP, gMAXHP, 52, 45, 45, gEx, gLv, gImgFight_Barbatos6_MS, null);
-    Barbtos5ground  = new MS(1, "バルバトス第五地上形態", gHP, gMAXHP, 48, 36, 45, gEx, gLv, gImgFight_Barbatos5ground_MS, Barbtos6);
-    Barbtos5space   = new MS(1, "バルバトス第五宇宙形態", gHP, gMAXHP, 48, 45, 45, gEx, gLv, gImgFight_Barbatos5space_MS, Barbtos5ground);
-    Barbtos4        = new MS(1, "バルバトス第四形態", gHP, gMAXHP, 48, 36, 45, gEx, gLv, gImgFight_Barbatos4_MS, Barbtos5space);
-    Barbtos3        = new MS(1, "バルバトス第三形態", gHP, gMAXHP, 44, 30, 40, gEx, gLv, gImgFight_Barbatos3_MS, Barbtos4);
-    Barbtos2        = new MS(1, "バルバトス第二形態", gHP, gMAXHP, 42, 30, 40, gEx, gLv, gImgFight_Barbatos2_MS, Barbtos3);
-    Barbtos1        = new MS(1, "バルバトス第一形態", 35, 35, 40, 30, 40, gEx, gLv, gImgFight_Barbatos1_MS, Barbtos2);
+    Barbtos6        = new MS(6, "バルバトス第六形態", null, null, null, null, null, gEx, gLv, gImgFight_Barbatos6_MS, null);
+    Set_Prm(Barbtos6);
 
-    GusionRebake    = new MS(2, "グシオンリベイク", 40, 40, 42, 50, 40, gEx, gLv, gImgFight_GusionRebake_MS, null);
-    Ryuseigo2       = new MS(3, "流星号", 30, 30, 37, 40, 35, gEx, gLv, gImgFight_Ryuseigo2_MS, null);
+    Barbtos5ground  = new MS(5, "バルバトス第五地上形態", null, null, null, null, null, gEx, gLv, gImgFight_Barbatos5ground_MS, Barbtos6);
+    Set_Prm(Barbtos5ground);
     
+    Barbtos5space   = new MS(4, "バルバトス第五宇宙形態", null, null, null, null, null, gEx, gLv, gImgFight_Barbatos5space_MS, Barbtos5ground);
+    Set_Prm(Barbtos5space);
+
+    Barbtos4        = new MS(3, "バルバトス第四形態", null, null, null, null, null, gEx, gLv, gImgFight_Barbatos4_MS, Barbtos5space);
+    Set_Prm(Barbtos4);
+
+    Barbtos3        = new MS(2, "バルバトス第三形態", null, null, null, null, null, gEx, gLv, gImgFight_Barbatos3_MS, Barbtos4);
+    Set_Prm(Barbtos3);
+
+    Barbtos2        = new MS(1, "バルバトス第二形態", null, null, null, null, null, gEx, gLv, gImgFight_Barbatos2_MS, Barbtos3);
+    Set_Prm(Barbtos2);
+
+    Barbtos1        = new MS(0, "バルバトス第一形態", null, null, null, null, null, 0, 5, gImgFight_Barbatos1_MS, Barbtos2);
+    Set_Prm(Barbtos1);
+
+    GusionRebake    = new MS(8, "グシオンリベイク", null, null, null, null, null, gEx, gLv, gImgFight_GusionRebake_MS, null);
+    Set_Prm(GusionRebake);
+
+    Ryuseigo2       = new MS(9, "流星号", null, null, null, null, null, gEx, gLv, gImgFight_Ryuseigo2_MS, null);
+    Set_Prm(Ryuseigo2);
+}
+
+/*************************************************** 
+概要 : 攻撃力、守備力、素早さを設定するMS
+引数 : prm_MS : 設定するMS
+戻値 : 無し
+***************************************************/
+function Set_Prm( prm_MS ){
+
+    prm_MS.MAXHP    = Math.floor(Abilty_list[prm_MS.ID][1] * prm_MS.Lv / 100 + prm_MS.Lv + 10); //MAX HP
+    prm_MS.HP       = prm_MS.MAXHP;
+    prm_MS.ATT      = Math.floor(Abilty_list[prm_MS.ID][2] * prm_MS.Lv / 100 + 5); //攻撃力
+    prm_MS.DEF      = Math.floor(Abilty_list[prm_MS.ID][3] * prm_MS.Lv / 100 + 5); //守備力
+    prm_MS.SPD      = Math.floor(Abilty_list[prm_MS.ID][4] * prm_MS.Lv / 100 + 5); //素早さ
+
 }
