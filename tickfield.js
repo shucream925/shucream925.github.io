@@ -9,9 +9,9 @@ function TickField_town( m ){
 
 function TickField_load( m ){
 
-    if( m == 66){
-        gMap_state = Map_list.town;
-    }
+    // if( m == 66){
+    //     gMap_state = Map_list.town;
+    // }
     
     if( m == 75 ){
         gPlayer.MS1.HP = gPlayer.MS1.MAXHP;

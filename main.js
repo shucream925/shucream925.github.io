@@ -120,8 +120,8 @@ function DrawMain()
     if(init == false){
         SetUpMS( );       //MS情報の設定
         gPlayer     = new Player(Barbtos1, null, null);
-        map_set1();
-        gMap_state = Map_list.load;
+        map_set0();
+        gMap_state = Map_list.town;
         MS_num = 1;
         init = true;
     }
@@ -202,17 +202,19 @@ function TickField()
     my += MAP_HEIGHT;       //マップループ処理Y
     my %= MAP_HEIGHT;       //マップループ処理Y
 
-    let m = gMap1_object[ my * MAP_WIDTH + mx ];        //タイル番号
+    let m;
 
     if( Math.abs( gMoveX ) + Math.abs( gMoveY ) >= SCR_SPEED )	//	マス目移動が終わる直前
     {
         
         switch( gMap_state ){
             case Map_list.town:
+                m = gMap0_object[ my * MAP_WIDTH + mx ];        //タイル番号
                 TickField_town( m );
                 break;
 
             case Map_list.load:
+                m = gMap1_object[ my * MAP_WIDTH + mx ];        //タイル番号
                 TickField_load( m );
                 break;
         }
